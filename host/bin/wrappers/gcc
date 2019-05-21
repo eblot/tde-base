@@ -1,0 +1,167 @@
+#!/usr/bin/env python3
+
+"""Quick and dirty script that uses hardcoded paths and ugly parsing method
+   to demonstrate the clang-without-gcc concept with an ARM-EABI target
+"""
+
+from os import system
+from os.path import dirname, join as joinpath
+from sys import argv, exit, stderr
+
+xtoolchain = None
+
+options = []
+
+verbose = '-v' in argv
+if '-E' in argv:
+    print("Invalid run mode: preprocessor", file=stderr)
+    exit(1)
+if '-c' not in argv and '-x' not in argv:
+    if verbose:
+        print("Linker mode", file=stderr)
+    tool = 'ld'
+    relocatable = False
+    incremental = False
+    stdlib = True
+    extras = []
+    skip = False
+    for arg in argv[1:]:
+        if skip:
+            skip = False
+            if not arg.startswith('-'):
+                continue
+        if arg.startswith('-f'):
+            continue
+        if arg.startswith('-mcpu'):  # should we?
+            continue
+        if arg.startswith('-std='):
+            continue
+        if arg.startswith('-Wl,'):
+            arg = arg[4:]
+        if arg.startswith('-W'):
+            continue
+        if arg.startswith('-f'):
+            continue
+        if arg.startswith('--sysroot'):
+            continue
+        if arg.startswith('-isysroot'):
+            skip = True
+            continue
+        if arg.startswith('-D') or arg.startswith('-U'):
+            skip = True
+            continue
+        if arg.startswith('-B'):
+            skip = True
+            continue
+        if arg.startswith('-m'):
+            continue
+        if arg == '-pipe':
+            # cause a 'bad -rpath option' for some reason
+            continue
+        if arg == '-nostdlib':
+            stdlib = False
+        if arg == '-r':
+            relocatable = True
+        if arg == '-r':
+            incremental = True
+        options.append(arg)
+    if '-target' in options:
+        targetpos = options.index('-target')
+        xtoolchain = options[targetpos+1]
+        options[targetpos:targetpos+2] = []
+    if '--Map' in options:
+        # fix map file path if any so that it is created in the same directory
+        # as the output file.
+        try:
+            outpos = options.index('-o')
+            outpath = dirname(options[outpos+1])
+            mappos = options.index('--Map')
+            options[mappos+1] = joinpath(outpath, options[mappos+1])
+        except Exception as ex:
+            print("Error", ex, file=stderr)
+    # -L can be used to specified path to nested control scripts, but these
+    # directives should always appear BEFORE the top-level control script
+    # option (-T), and clang front end seems to ignore the specified order
+    opt_positions = {}
+    for path_opt in 'LT':
+        while True:
+            try:
+                # Concatenate '-T' and the following path into a single option
+                opt_pos = options.index('-%s' % path_opt)
+            except ValueError as ex:
+                # no script or path already specified as a concatenated string
+                break
+            options[opt_pos] = ''.join((options[opt_pos],
+                                        options.pop(opt_pos+1)))
+        opt_positions[path_opt] = [pos for pos, opt in enumerate(options)
+                                   if opt.startswith('-%s' % path_opt)]
+    if 'T' in opt_positions and 'L' in opt_positions:
+        if len(opt_positions['T']) > 1:
+            raise ValueError('Wrapper does not support multiple LD scripts')
+        l_pos, t_pos = max(opt_positions['L']), max(opt_positions['T'])
+        options[l_pos], options[t_pos] = options[t_pos], options[l_pos]
+else:
+    if verbose:
+        print("Assembler mode", file=stderr)
+    tool = 'as'
+    skip = False
+    force_skip = False
+    for arg in argv[1:]:
+        if skip:
+            skip = False
+            if not arg.startswith('-'):
+                continue
+        if force_skip:
+            force_skip = False
+            continue
+        if arg in ('-nostdsysteminc', '-nobuiltininc', '-nostdinc',
+                   '-nostdlib', '-nostartfiles'):
+            continue
+        if arg.startswith('-f'):
+            continue
+        if arg.startswith('-W'):
+            continue
+        if arg.startswith('-M'):
+            skip = True
+            continue
+        if arg.startswith('-D') or arg.startswith('-U'):
+            skip = True
+            continue
+        if arg.startswith('-c'):
+            continue
+        if arg.startswith('-O'):
+            continue
+        if arg.startswith('--sysroot'):
+            continue
+        if arg.startswith('-std'):
+            continue
+        if arg.startswith('-pipe'):
+            continue
+        if arg.startswith('-x'):
+            skip = True
+            continue
+        if arg.startswith('-L') or arg.startswith('-T'):
+            if len(arg) < 3:
+                skip = True
+            continue
+        if arg.startswith('-msoft-float'):
+            continue
+        if arg == '-mllvm':
+            force_skip = True
+            continue
+        if arg.startswith('-B'):
+            arg = '-I%s' % arg[2:]
+        if arg.startswith('-isystem'):
+            arg = '-I%s' % arg[8:]
+        options.append(arg)
+cmd = '%s-%s %s' % (xtoolchain, tool, ' '.join(options))
+if verbose:
+    print(cmd)
+rc = system(cmd)
+if rc:
+    print('Failed command:', file=stderr)
+    print(' ', cmd, file=stderr)
+    if verbose:
+        from pprint import pprint
+        pprint(argv)
+exit(rc and 1 or 0)

@@ -1,0 +1,34 @@
+FROM alpine:v3.9.2
+
+ENV CLANG8PATH=/usr/local/clang8
+ENV BINUTILSPATH=/usr/local/arm-none-eabi
+ENV PATH=$PATH:${CLANG8PATH}/bin:${BINUTILSPATH}/bin
+
+WORKDIR /
+
+LABEL description="Development environment"
+LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
+
+RUN apk update
+RUN apk add ninja cmake subversion patch pv xz doxygen curl
+RUN apk add libusb libftdi1 libffi readline ncurses openssl
+RUN apk add build-base linux-headers
+RUN apk add libffi-dev readline-dev bash ncurses-dev openssl-dev
+RUN curl -L 'https://raw.githubusercontent.com/eblot/alpine/master/packages/community/x86_64/python3_5-3.5.6-r4.apk' > ./python3_5-3.5.6-r4.apk
+RUN curl -L 'https://raw.githubusercontent.com/eblot/alpine/master/packages/community/x86_64/python3_5-dev-3.5.6-r4.apk' > ./python3_5-dev-3.5.6-r4.apk
+RUN apk add --allow-untrusted ./python3_5-3.5.6-r4.apk ./python3_5-dev-3.5.6-r4.apk
+RUN rm python3_5-3.5.6-r4.apk python3_5-dev-3.5.6-r4.apk
+RUN pip3 install -U pip
+RUN pip3 install readline paramiko netifaces
+RUN pip3 install six crcmod ruamel.yaml protobuf tabulate
+RUN pip3 install sphinx sphinx_rtd_theme sphinx_autodoc_typehints breathe
+RUN pip3 install pyusb pyserial
+RUN apk del build-base linux-headers python3-dev
+RUN apk del libffi-dev readline-dev bash ncurses-dev openssl-dev
+RUN apk add hidapi --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
+
+# docker build -f host/docker/exec/devenv.docker -t devenv:tmp .
+# docker run -it --name devenv_tmp devenv:tmp /bin/sh -c "exit"
+# docker export devenv_tmp | docker import - devenv:latest
+# docker rm devenv_tmp
+# docker rmi devenv:tmp
