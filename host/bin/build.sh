@@ -93,7 +93,6 @@ DOCCHECK=0
 FORCEVER=0
 FORCEBLD=0
 BUILD=${BUILD:-"DEBUG"}
-TAG_RELEASE=${TAG_RELEASE:-1}
 COMPSELOPT=""
 CMAKEOPT=""
 PROJECTDESC=""
@@ -105,28 +104,6 @@ DOCCOMPS=""
 DOCFORMAT="html"
 BUILD_RAMDISK_MSIZE=${BUILD_RAMDISK_MSIZE:-0}
 
-SVNDOMAINS="github.com"
-
-# If TAG_RELEASE should be detected automatically, attempts to guess whether
-# the current directory is managed under SVN and if the SVN repository allows
-# to tag an official version
-if [ "${TAG_RELEASE}" = "auto" ]; then
-    TAG_RELEASE=0
-    SVN=`which svn`
-    if [ -n ${SVN} -a -x "${SVN}" ]; then
-        svnroot=`LC_ALL=C ${SVN} info . 2>/dev/null | grep "Repository Root:"`
-        svndomain=`echo "$svnroot" | cut -d/ -f3 | \
-                   sed -E 's/[^.]+\.//'` 2>/dev/null
-        case "${svndomain}" in
-          ${SVNDOMAINS})
-            TAG_RELEASE=1
-            ;;
-          *)
-            ;;
-        esac
-    fi
-fi
-
 # Build the default setting help messages
 if [ ${BUILD} = "RELEASE" ]; then
     DEBUG_ENABLED="(defaut: disabled)"
@@ -134,11 +111,6 @@ if [ ${BUILD} = "RELEASE" ]; then
 else
     DEBUG_ENABLED="(default: enabled)"
     RELEASE_ENABLED="(default: disabled)"
-fi
-if [ ${TAG_RELEASE} -gt 0 ]; then
-    SYS_ENABLED="(default: enabled)"
-else
-    SYS_ENABLED="(reserved)"
 fi
 
 # Show usage information
@@ -215,9 +187,6 @@ while [ $# -ge 0 ]; do
       -D)
         BUILD="DEBUG"
         AUTO_PROJECTS=1
-        ;;
-      -t)
-        TAG_RELEASE=1
         ;;
       -c)
         if [ ${CLEAN} -eq 1 ]; then
@@ -347,11 +316,6 @@ if [ -n "$PROJECTDESC" ]; then
         done
         PROJECTS=`echo "$AUTOPROJECTS" | sed 's/^,//'`
     fi
-fi
-
-# Update the CMake flags and SVN detection based on TAG_RELEASE option
-if [ "${TAG_RELEASE}" -gt 0 ]; then
-    CMAKEOPT="-DTAG_RELEASE=1 $CMAKEOPT"
 fi
 
 # Perform some build-dependent sanity checks

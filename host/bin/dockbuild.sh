@@ -89,9 +89,8 @@ done
 # It is not possible to check out a branch hierarchy, and build from a
 # sub directory of the working copy, i.e. checkout branches/release works,
 # but ckeckiout branches/, cd'ing into release and invoke build does not.
-if [ ! -d ".svn" ]; then
-    echo "SVN working copy not found. Run $(basename $0) from a SVN" \
-         "leaf branch" >&2
+if [ ! -d ".git" ]; then
+    echo "Git repository not found. Run $(basename $0) from top-level dir" >&2
     exit 1
 fi
 
