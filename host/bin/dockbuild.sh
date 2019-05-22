@@ -6,11 +6,10 @@ PRODUCTS='*.elf *.hex *.pdf *.egg html'
 
 BUILD_SCRIPT="host/bin/build.sh"
 
-if [ -n "${DOCKERHUB_USER}" ]; then
-    hubprefix="${DOCKERHUB_USER}/"
-else
-    hubprefix=""
+if [ -z "${DOCKERHUB_USER}" ]; then
+    DOCKERHUB_USER="iroazh"
 fi
+hubprefix="${DOCKERHUB_USER}/"
 
 . "$(dirname $0)/../docker/exec/docker.conf"
 

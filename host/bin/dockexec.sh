@@ -17,11 +17,10 @@ $NAME [options]
 EOT
 }
 
-if [ -n "${DOCKERHUB_USER}" ]; then
-    hubprefix="${DOCKERHUB_USER}/"
-else
-    hubprefix=""
+if [ -z "${DOCKERHUB_USER}" ]; then
+    DOCKERHUB_USER="iroazh"
 fi
+hubprefix="${DOCKERHUB_USER}/"
 
 NOCMD=0
 DEVENV=devenv

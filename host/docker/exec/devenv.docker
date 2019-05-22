@@ -1,4 +1,4 @@
-FROM alpine:v3.9.2
+FROM alpine:3.9.4
 
 ENV CLANG8PATH=/usr/local/clang8
 ENV BINUTILSPATH=/usr/local/arm-none-eabi
@@ -10,14 +10,10 @@ LABEL description="Development environment"
 LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
 
 RUN apk update
-RUN apk add ninja cmake subversion patch pv xz doxygen curl
+RUN apk add ninja cmake subversion git patch pv xz doxygen curl python3
 RUN apk add libusb libftdi1 libffi readline ncurses openssl
 RUN apk add build-base linux-headers
-RUN apk add libffi-dev readline-dev bash ncurses-dev openssl-dev
-RUN curl -L 'https://raw.githubusercontent.com/eblot/alpine/master/packages/community/x86_64/python3_5-3.5.6-r4.apk' > ./python3_5-3.5.6-r4.apk
-RUN curl -L 'https://raw.githubusercontent.com/eblot/alpine/master/packages/community/x86_64/python3_5-dev-3.5.6-r4.apk' > ./python3_5-dev-3.5.6-r4.apk
-RUN apk add --allow-untrusted ./python3_5-3.5.6-r4.apk ./python3_5-dev-3.5.6-r4.apk
-RUN rm python3_5-3.5.6-r4.apk python3_5-dev-3.5.6-r4.apk
+RUN apk add libffi-dev readline-dev bash ncurses-dev openssl-dev python3-dev
 RUN pip3 install -U pip
 RUN pip3 install readline paramiko netifaces
 RUN pip3 install six crcmod ruamel.yaml protobuf tabulate

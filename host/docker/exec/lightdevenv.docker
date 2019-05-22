@@ -1,4 +1,4 @@
-FROM alpine:v3.9.2
+FROM alpine:3.9.4
 
 ENV CLANG8PATH=/usr/local/clang8
 ENV BINUTILSPATH=/usr/local/arm-none-eabi
@@ -10,10 +10,7 @@ LABEL description="Light development environment"
 LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
 
 RUN apk update
-RUN apk add ninja cmake subversion patch pv xz curl
-RUN curl -L 'https://raw.githubusercontent.com/eblot/alpine/master/packages/community/x86_64/python3_5-3.5.6-r4.apk' > ./python3_5-3.5.6-r4.apk
-RUN apk add --allow-untrusted ./python3_5-3.5.6-r4.apk
-RUN rm python3_5-3.5.6-r4.apk
+RUN apk add ninja cmake subversion git patch pv xz curl python3
 RUN pip3 install -U pip crcmod ruamel.yaml
 
 # docker build -f host/docker/exec/lightdevenv.docker -t lightdevenv:tmp .
