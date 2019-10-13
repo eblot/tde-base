@@ -53,7 +53,7 @@ if [ $? -eq 0 ]; then
     GITVER="${GITVER}-M"
 fi
 
-GITBRANCH=`git branch -q | cut -d' ' -f2`
+GITBRANCH=`git symbolic-ref --short HEAD`
 
 # Get the current date as a second count since the Epoch (UTC)
 BUILDDATE=`date -u "+%s"`
