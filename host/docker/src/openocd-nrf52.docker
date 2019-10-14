@@ -1,4 +1,4 @@
-FROM alpine:v3.9.2 as builder
+FROM alpine:3.10 as builder
 LABEL description="Build OpenOCD for nRF52 targets"
 LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
 RUN apk update
@@ -24,7 +24,7 @@ RUN make
 RUN make install
 WORKDIR /
 
-FROM alpine:v3.9.2
+FROM alpine:3.10
 LABEL description="OpenOCD for nRF52 targets"
 LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
 COPY --from=builder /usr/local/nrf52 /usr/local/nrf52
@@ -32,5 +32,4 @@ ENV PATH=$PATH:/usr/local/nrf52/bin
 WORKDIR /
 
 # (from host/docker/src)
-# docker build -f openocd-nrf52.docker -t ${DOCKERHUB_USER}/openocd-nrf52:v0.10.1 .
-# docker push ${DOCKERHUB_USER}/openocd-nrf52:v0.10.1
+# docker build -f openocd-nrf52.docker -t ${DOCKERHUB_USER}/openocd-nrf52:v0.10.1-10 .

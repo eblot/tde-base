@@ -1,4 +1,4 @@
-FROM alpine:v3.9.0
+FROM alpine:3.10
 
 LABEL description="Compiler Explorer for LLVM/Clang toolchain"
 LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
@@ -11,7 +11,7 @@ COPY host/docker/src/config/c.local.properties compiler-explorer/etc/config/
 WORKDIR /compiler-explorer
 RUN make dist
 
-# docker build -f host/docker/src/clang-expl.docker -t clang-expl:v7 .
-# host/bin/dockexec.sh --env clang-expl:v7 --port 10240
+# docker build -f host/docker/src/clang-expl.docker -t clang-expl:v8-10 .
+# host/bin/dockexec.sh --env clang-expl:v8-10 --port 10240
 #   (cd /compiler-explorer && make)
 # http://localhost:10240

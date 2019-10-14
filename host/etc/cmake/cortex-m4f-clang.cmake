@@ -4,6 +4,25 @@
 
 CMAKE_MINIMUM_REQUIRED (VERSION 3.5)
 
-# FPU and soft FP use the same toolchain, the TARGET variable is used to
-# select the specific FP options
-INCLUDE (cortex-m4-clang)
+# Use common Cortex-M definitions
+INCLUDE (cortex-m-clang)
+
+#-----------------------------------------------------------------------------
+# Define the SoC flags
+#-----------------------------------------------------------------------------
+MACRO (use_target)
+  # for some awkward CMake reason, AR and RANLIB cannot be defined before
+  # PROJECT() is set, as they are clear-out on this call
+  SET (CMAKE_AR ${xar})
+  SET (CMAKE_RANLIB ${xranlib})
+  LINK_DIRECTORIES (${XCC_SYSROOT}/lib ${XXX_SYSROOT}/lib)
+  LIST (APPEND PROJECT_LINK_LIBRARIES clang_rt.builtins-armv7em)
+  STRING (REGEX REPLACE "f$" "" cpu ${TARGET})
+  SET (XCC_FPOPT "-mfloat-abi=hard -mfpu=fpv4-sp-d16")
+  SET (XISA "thumb")
+  SET (XCC_ISA "-m${XISA} -mabi=aapcs -fshort-enums")
+  SET (ARCH "-target ${XTOOLPREFIX} -mcpu=${cpu} ${XCC_FPOPT} -fshort-enums")
+  SET (XCC_MIN_OPTIMIZATION_LEVEL "0")
+  SET (XCC_MAX_OPTIMIZATION_LEVEL "z")
+  STRING (TOLOWER ${TARGET} LCTARGET)
+ENDMACRO ()

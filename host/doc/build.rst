@@ -735,7 +735,7 @@ Required dependencies
  * Ninja (1.6+)
  * Clang/LLVM (6.0+) for ARM targets
  * TI toolchain (16.9+) for MSP430 targets
- * Python 3.5 with additional packages (see SDK installation doc for details)
+ * Python 3.6 with additional packages (see SDK installation doc for details)
 
 Optional dependencies
 ~~~~~~~~~~~~~~~~~~~~~

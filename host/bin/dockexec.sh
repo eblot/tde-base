@@ -93,7 +93,7 @@ if [ ! $(docker images -q -f reference=${devenv}) ]; then
 fi
 
 IMGPATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
-IMGPATH=${IMGPATH}:/usr/local/clang8/bin:/usr/local/arm-none-eabi/bin:/usr/local/nrf52/bin
+IMGPATH=${IMGPATH}:/usr/local/clang9/bin:/usr/local/arm-none-eabi/bin:/usr/local/nrf52/bin
 
 if [ -z "${ARGS}" ]; then
     CMD="sh"
@@ -120,4 +120,8 @@ docker run ${EXTRAS} \
     --mount type=bind,source=${PWD},target=/${SBX} \
     --workdir=/${SBX} ${devenv} \
     /bin/sh -c "${CMD}"
+DOCKER_RC=$?
+
 rm -f ${PWD}/build/.dockenv 2> /dev/null
+
+exit ${DOCKER_RC}

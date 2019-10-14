@@ -345,7 +345,7 @@ MACRO (create_map_file app)
   SET (mapfile "${CMAKE_CURRENT_BINARY_DIR}/${app}.map")
   IF (NOT CMAKE_C_COMPILER_ID STREQUAL "TI")
     SET_TARGET_PROPERTIES (${app} PROPERTIES LINK_FLAGS
-      "${old_link_flags} ${LDCALL}--Map ${LDCALL}${mapfile}")
+      "${old_link_flags} -Wl,--Map -Wl,${mapfile}")
   ENDIF ()
 ENDMACRO ()
 
@@ -402,10 +402,14 @@ MACRO (build_ble_fw task_name outdir bgproj)
   ELSE ()
     SET (builddef)
   ENDIF ()
+  IF( VERBOSE )
+    SET (bgopt "-d")
+  ENDIF()
   GET_FILENAME_COMPONENT (bgoutput ${bgproj} NAME)
   ADD_CUSTOM_COMMAND (OUTPUT ${outdir}/${bgoutput}
                       COMMAND ${bgbuild}
                         ${builddef}
+                        ${bgopt}
                         -o ${outdir} ${bgproj}
                       WORKING_DIRECTORY ${outdir}
                       DEPENDS ${bgproj}

@@ -7,15 +7,15 @@
 export LC_ALL="C"
 
 #--- XTC (Cross ToolChain) recommended/enforced tool versions
-SYS_PYTHON_VER="3.5.2"
-SYS_CMAKE_VER="3.5.1"
+SYS_PYTHON_VER="3.6.0"
+SYS_CMAKE_VER="3.13.0"
 SYS_XTCCC_VER="6.3.0"
-SYS_XTCBU_VER="2.32"
-SYS_XTCCL_VER="8.0.0"
-SYS_MAKE_VER="3.81"
-SYS_NINJA_VER="1.6.0"
-SYS_DOXYGEN_VER="1.8.11"
-SYS_SPHINX_VER="1.5.3"
+SYS_XTCBU_VER="2.32.0"
+SYS_XTCCL_VER="9.0.0"
+SYS_XTCTI_VER="18.12.2"
+SYS_NINJA_VER="1.8.2"
+SYS_DOXYGEN_VER="1.8.15"
+SYS_SPHINX_VER="2.0.0"
 
 # detects build tools
 TOPDIR="$PWD"
@@ -368,22 +368,6 @@ check_host_tools() {
         die "Please start the script for the top-level source directory"
     fi
 
-    # Verify GNU make
-    MAKE=`which make 2> /dev/null`
-    if [ -n "${MAKE}" ]; then
-      MAKEVER_STR=`${MAKE} --version 2>&1 | head -1 | sed s'/^[^0-9\.]*//'`
-      if [ "${check_all}" -gt 0 -a "${FORCEVER}" -gt 0 ]; then
-          if [ "${MAKEVER_STR}" != "${SYS_MAKE_VER}" ]; then
-              die "Make tool mismatch: v${SYS_MAKE_VER} required," \
-                   "v${MAKEVER_STR} installed"
-          fi
-      fi
-
-      if [ -n "${VERBOSE}" ]; then
-          echo "make:           ${MAKE} (v${MAKEVER_STR})"
-      fi
-    fi
-
     # Verify CMake
     CMAKE=${CMAKE:-`which cmake 2> /dev/null`}
     if [ -z "${CMAKE}" -o ! -x "${CMAKE}" ]; then
@@ -525,14 +509,11 @@ check_host_tools() {
             die "Invalid Sphinx installation"
         SPHINXVER_STR=`${SPHINX} --version 2>&1 | head -1 | \
                        sed 's/\([^0-9\.]\)//g'`
-        SPHXVER_MAJ=`echo ${SPHINXVER_STR} | cut -d. -f1`
-        SPHXVER_MIN=`echo ${SPHINXVER_STR} | cut -d. -f2`
-        SYS_SPHINX_MAJ=`echo ${SYS_SPHINX_VER} | cut -d. -f1`
-        SYS_SPHINX_MIN=`echo ${SYS_SPHINX_VER} | cut -d. -f2`
-        if [ ${SPHXVER_MAJ} -lt ${SYS_SPHINX_MAJ} -o \
-             ${SPHXVER_MIN} -lt ${SYS_SPHINX_MIN} ]; then
+        SPHINX_VN=$(version_number ${SPHINXVER_STR})
+        SYS_SPHINX_VN=$(version_number ${SYS_SPHINX_VER})
+        if [ ${SPHINX_VN} -lt ${SYS_SPHINX_VN} ]; then
             die "Sphinx version too old: ${SPHINXVER_STR},"\
-                 "${SYS_SPHINX_MAJ}.${SYS_SPHINX_MIN}+ required"
+                 "${SYS_SPHINX_VER}+ required"
         fi
         if [ -n "${VERBOSE}" ]; then
             echo "sphinx:         ${SPHINX} (v${SPHINXVER_STR})"
@@ -905,7 +886,6 @@ USER_CMAKE_VER="${USER_CMAKE_VER=}"
 USER_XTCCC_VER="${USER_XTCCC_VER=}"
 USER_XTCBU_VER="${USER_XTCBU_VER=}"
 USER_XTCCL_VER="${USER_XTCCL_VER=}"
-USER_MAKE_VER="${USER_MAKE_VER=}"
 USER_NINJA_VER="${USER_NINJA_VER=}"
 USER_DOXYGEN_VER="${USER_DOXYGEN_VER=}"
 USER_SPHINX_VER="${USER_SPHINX_VER=}"
@@ -1024,6 +1004,9 @@ for prjdesc in `echo ${PROJECTS} | tr ',' ' '`; do
         fi
     else
         CMAKEPRJOPT="${CMAKEOPT}"
+        if [ -n "${VERBOSE}" ]; then
+            CMAKEPRJOPT="${CMAKEPRJOPT} -DVERBOSE=1"
+        fi
     fi
     # 5. Build the project
     echo ""

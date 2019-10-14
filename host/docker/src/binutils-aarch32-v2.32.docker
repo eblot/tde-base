@@ -1,4 +1,4 @@
-FROM alpine:v3.9.2 as builder
+FROM alpine:3.10 as builder
 LABEL description="Build binutils for AARM Aarch32 targets"
 LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
 RUN apk update
@@ -30,13 +30,12 @@ RUN make
 RUN make install
 WORKDIR /
 
-FROM alpine:v3.9.2
+FROM alpine:3.10
 LABEL description="Aarch32 binutils"
 LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
 COPY --from=builder /usr/local/arm-none-eabi /usr/local/arm-none-eabi
 ENV PATH=$PATH:/usr/local/arm-none-eabi
 WORKDIR /
 
-# docker build -f host/docker/src/binutils-aarch32-v2.32.docker -t binutils-aarch32:v2.32 .
-# docker tag binutils-aarch32:v2.32 ${DOCKERHUB_USER}/binutils-aarch32:v2.32
-# docker push ${DOCKERHUB_USER}/binutils-aarch32:v2.32
+# docker build -f host/docker/src/binutils-aarch32-v2.32.docker -t binutils-aarch32:v2.32-10 .
+# docker tag binutils-aarch32:v2.32-10 ${DOCKERHUB_USER}/binutils-aarch32:v2.32-10

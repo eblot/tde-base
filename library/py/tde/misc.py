@@ -141,18 +141,18 @@ def to_int(value):
     return int(value.strip(), value.startswith('0x') and 16 or 10)
 
 
-def to_bool(value, permissive=True, allow_int=False):
+def to_bool(value, permissive=True, prohibit_int=False):
     """Parse a string and convert it into a boolean value if possible.
 
        Input value may be:
-       - a string with an integer value, if `allow_int` is enabled
+       - a string with an integer value, if `prohibit_int` is not set
        - a boolean value
        - a string with a common boolean definition
 
        :param value: the value to parse and convert
        :type value: str or int or bool
        :param bool permissive: default to the False value if parsing fails
-       :param bool allow_int: allow an integral type as the input value
+       :param bool prohibit_int: prohibit an integral type as the input value
        :rtype: bool
        :raise ValueError: if the input value cannot be converted into an bool
     """
@@ -161,11 +161,12 @@ def to_bool(value, permissive=True, allow_int=False):
     if isinstance(value, bool):
         return value
     if isinstance(value, int):
-        if allow_int:
-            return bool(value)
-        if permissive:
-            return False
-        raise ValueError("Invalid boolean value: '%d'" % value)
+        if not prohibit_int:
+            if permissive:
+                return bool(value)
+            if value in (0, 1):
+                return bool(value)
+        raise ValueError("Invalid boolean value: '%d'", value)
     if value.lower() in TRUE_BOOLEANS:
         return True
     if permissive or (value.lower() in FALSE_BOOLEANS):
@@ -230,8 +231,8 @@ def pretty_size(size, sep=' ', lim_k=1 << 10, lim_m=10 << 20, plural=True,
 
 
 def pretty_period(value: Union[int, float],
-                  units: Optional[str] = None,
-                  sep: Optional[str] = None) -> str:
+                  units: Optional[str]=None,
+                  sep: Optional[str]=None) -> str:
     """Convert a delay/period into a string.
 
        :param value: the period or delay in seconds
@@ -248,7 +249,7 @@ def pretty_period(value: Union[int, float],
     second -= minute*60
     if not units:
         units = 'smh'
-    elif units == 'degree':
+    elif fmt == 'degree':
         units = '"\'h'
     else:
         if not isinstance(units, str) or len(units) < 3:
@@ -273,11 +274,11 @@ def group(lst, count):
     return list(zip(*[lst[i::count] for i in range(count)]))
 
 
-def flatten(seq):
+def flatten(lst):
     """Flatten a list. See http://stackoverflow.com/questions/952914/\
            making-a-flat-list-out-of-list-of-lists-in-python
     """
-    return [item for sublist in seq for item in sublist]
+    return [item for sublist in lst for item in sublist]
 
 
 def file_generator(path, action, *args):
@@ -406,6 +407,8 @@ def configure_logging(verbosity, longfmt, logdest=None, loggers=None,
                         if not isinstance(handler, logging.NullHandler)])
 
     for logger in loggers or []:
+        # Do not propagate log message above this top-level logger
+        logger.log.propagate = False
         # replicate the handlers of the first loggger to all other handlers
         # which have not been assigned one or more handlers yet
         if not default_handlers and logger.log.handlers:

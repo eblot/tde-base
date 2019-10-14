@@ -4,9 +4,10 @@
 from array import array as Array
 from binascii import hexlify, unhexlify
 from io import BytesIO, StringIO
-from os import stat, linesep, SEEK_SET
+from os import stat, linesep, SEEK_END, SEEK_SET
 from re import compile as re_compile
 from struct import pack as spack
+from .misc import group
 from .term import is_term
 
 
@@ -145,6 +146,31 @@ class RecordParser:
     def getexec(self):
         return self._exec_addr
 
+    @classmethod
+    def is_valid_syntax(cls, file):
+        """Tell whether the file contains a valid HEX syntax.
+
+           :param file: either a filepath or a file-like object
+           :return: True if the file content looks valid
+        """
+        cre = getattr(cls, 'SYNTAX_CRE', None)
+        if not cre:
+            return False
+        last = False
+        with isinstance(file, str) and open(file, 'rt') or file as hfp:
+            try:
+                for line in hfp:
+                    line = line.strip()
+                    if not line:
+                        last = True
+                        continue
+                    if not cre.match(line) or last:
+                        # there should be no empty line but the last one(s)
+                        return False
+            except Exception:
+                return False
+        return True
+
     def _verify_address(self, address):
         if (address < self._min_addr) or (address > self._max_addr):
             raise RecordError("Address out of range [0x%08x..0x%08x]: 0x%08x" %
@@ -161,6 +187,8 @@ class RecordParser:
 class SRecParser(RecordParser):
     """S-record file parser.
     """
+
+    SYNTAX_CRE = re_compile('(?i)^S([0-9])((?:[0-9A-F]{2})+)$')
 
     def _get_next_chunk(self):
         # test if the file size can be found...
@@ -250,33 +278,11 @@ class IHexParser(RecordParser):
     """Intel Hex record file parser.
     """
 
-    HEX_CRE = re_compile('(?i)^:[0-9A-F]+$')
+    SYNTAX_CRE = re_compile('(?i)^:[0-9A-F]+$')
 
     def __init__(self, *args, **kwargs):
         super(IHexParser, self).__init__(*args, **kwargs)
         self._offset_addr = 0
-
-    @classmethod
-    def is_valid_syntax(cls, file):
-        """Tell whether the file contains a valid HEX syntax.
-
-           :param file: either a filepath or a file-like object
-           :return: True if the file content looks valid
-        """
-        last = False
-        with isinstance(file, str) and open(file, 'rt') or file as hfp:
-            try:
-                for line in hfp:
-                    line = line.strip()
-                    if not line:
-                        last = True
-                        continue
-                    if not cls.HEX_CRE.match(line) or last:
-                        # there should be no empty line but the last one(s)
-                        return False
-            except Exception:
-                return False
-        return True
 
     def _get_next_chunk(self):
         # test if the file size can be found...
@@ -546,7 +552,7 @@ class SRecBuilder(RecordBuilder):
 
     @classmethod
     def checksum(cls, hexastr):
-        dsum = sum([ord(b) for b in unhexlify(hexastr)])
+        dsum = sum(Array('B', unhexlify(hexastr)))
         dsum &= 0xff
         return dsum ^ 0xff
 
@@ -570,9 +576,9 @@ class SRecBuilder(RecordBuilder):
             prefix = 'S3%02x%08x'
         for pos in range(0, len(data), 16):
             chunk = data[pos:pos+16]
-            hexachunk = hexlify(chunk)
-            line = prefix % (len(chunk) + int(prefix[1])+1 + 1, offset) + \
-                hexachunk
+            hexachunk = hexlify(chunk).decode()
+            line = prefix % (len(chunk) + int(prefix[1])+1 + 1,
+                             offset + segment.baseaddr) + hexachunk
             line += "%02x" % SRecBuilder.checksum(line[2:])
             yield line.upper()
             offset += 16

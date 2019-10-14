@@ -1,8 +1,8 @@
-FROM alpine:3.9.4
+FROM alpine:3.10
 
-ENV CLANG8PATH=/usr/local/clang8
+ENV CLANG9PATH=/usr/local/clang9
 ENV BINUTILSPATH=/usr/local/arm-none-eabi
-ENV PATH=$PATH:${CLANG8PATH}/bin:${BINUTILSPATH}/bin
+ENV PATH=$PATH:${CLANG9PATH}/bin:${BINUTILSPATH}/bin
 
 WORKDIR /
 
@@ -10,10 +10,11 @@ LABEL description="Development environment w/ full documentation generation"
 LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
 
 RUN apk update
-RUN apk add ninja cmake subversion git patch pv xz doxygen curl python3
+RUN apk add ninja cmake git patch pv xz doxygen curl
 RUN apk add libusb libftdi1 libffi readline ncurses openssl
 RUN apk add build-base linux-headers
-RUN apk add libffi-dev readline-dev bash ncurses-dev openssl-dev python3-dev
+RUN apk add libffi-dev readline-dev bash ncurses-dev openssl-dev
+RUN apk add python3 python3-dev
 RUN pip3 install -U pip
 RUN pip3 install readline paramiko netifaces
 RUN pip3 install six crcmod ruamel.yaml protobuf tabulate

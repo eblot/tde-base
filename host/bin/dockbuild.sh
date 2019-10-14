@@ -117,7 +117,7 @@ if [ ! $(docker images -q -f reference=${devenv}) ]; then
 fi
 
 IMGPATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
-IMGPATH=${IMGPATH}:/usr/local/clang8/bin:/usr/local/arm-none-eabi/bin
+IMGPATH=${IMGPATH}:/usr/local/clang9/bin:/usr/local/arm-none-eabi/bin
 
 FILTER=''
 for product in ${PRODUCTS}; do
@@ -175,9 +175,12 @@ docker run \
     ${DOCKOPTS} \
     --workdir=/${SBX} ${devenv} \
     /bin/sh -c "${CMD}"
+DOCKER_RC=$?
 
 if [ ${PROD} -ne 0 ] && [ -s "${PWD}/build/.dockbuild.tar" ]; then
     # Production mode: extract useful output file from generated tar file
     (cd "${PWD}/build" && tar xf .dockbuild.tar)
     rm -f "${PWD}/build/.dockbuild.tar" 2> /dev/null
 fi
+
+exit ${DOCKER_RC}

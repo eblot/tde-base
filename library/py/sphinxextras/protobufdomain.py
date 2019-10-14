@@ -96,21 +96,21 @@ class ProtobufObject(ObjectDescription):
 class ProtobufFixedField(ProtobufObject):
   prefix = 'fixed'
   doc_field_types = [
-    Field('size', label=l_('Size'),
+    Field('size', label=_('Size'),
           names=('size',))
   ]
 
 class ProtobufEnum(ProtobufObject):
   prefix = 'enum'
   doc_field_types = [
-    Field('symbols', label=l_('Symbols'),
+    Field('symbols', label=_('Symbols'),
           names=('symbols',))
   ]
 
 class ProtobufMessage(ProtobufObject):
   prefix = 'message'
   doc_field_types = [
-    TypedField('fields', label=l_('Fields'),
+    TypedField('fields', label=_('Fields'),
                names=('field','member'),
                typenames=('type',),
                typerolename='message')
@@ -121,13 +121,13 @@ class ProtobufError(ProtobufMessage):
 
 class ProtobufRPCMessage(ProtobufObject):
   doc_field_types = [
-    TypedField('arguments', label=l_('Arguments'),
+    TypedField('arguments', label=_('Arguments'),
                names=('argument','arg','param'),
                typerolename='rpc'),
-    GroupedField('errors', label=l_('Throws'),
+    GroupedField('errors', label=_('Throws'),
                  names=('throws','throw'),
                  can_collapse=True),
-    Field('returntype', label=l_('Returns'),
+    Field('returntype', label=_('Returns'),
           names=('returns','return'))
   ]
 
@@ -136,11 +136,11 @@ class ProtobufDomain(Domain):
   label = "Apache Protobuf"
 
   object_types = {
-    'fixed':  ObjType(l_('fixed'),  'fixed'),
-    'enum':   ObjType(l_('enum'),   'enum'),
-    'message': ObjType(l_('message'), 'message'),
-    'error':  ObjType(l_('error'),  'error'),
-    'rpc':    ObjType(l_('rpc'),    'rpc'),
+    'fixed':  ObjType(_('fixed'),  'fixed'),
+    'enum':   ObjType(_('enum'),   'enum'),
+    'message': ObjType(_('message'), 'message'),
+    'error':  ObjType(_('error'),  'error'),
+    'rpc':    ObjType(_('rpc'),    'rpc'),
   }
 
   directives = {

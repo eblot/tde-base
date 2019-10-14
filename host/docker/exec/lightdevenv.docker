@@ -1,8 +1,8 @@
-FROM alpine:3.9.4
+FROM alpine:3.10
 
-ENV CLANG8PATH=/usr/local/clang8
+ENV CLANG9PATH=/usr/local/clang9
 ENV BINUTILSPATH=/usr/local/arm-none-eabi
-ENV PATH=$PATH:${CLANG8PATH}/bin:${BINUTILSPATH}/bin
+ENV PATH=$PATH:${CLANG9PATH}/bin:${BINUTILSPATH}/bin
 
 WORKDIR /
 
@@ -10,7 +10,7 @@ LABEL description="Light development environment"
 LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
 
 RUN apk update
-RUN apk add ninja cmake subversion git patch pv xz curl python3
+RUN apk add ninja cmake git patch pv xz curl python3
 RUN pip3 install -U pip crcmod ruamel.yaml
 
 # docker build -f host/docker/exec/lightdevenv.docker -t lightdevenv:tmp .
