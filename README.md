@@ -13,11 +13,13 @@ It focuses on using:
    *i.e.* Make-free
  * [LLVM](https://llvm.org) as the compiler infrastructure,
    *i.e.* no GCC, and restricted use of binutils:
-     - [clang](http://clang.llvm.org) as the C front-end compiler (no C++)
+     - [clang](http://clang.llvm.org) as the C and C++ front-end compiler
      - LLVM integrated assembler
      - [lld](http://lld.llvm.org) as the linker
      - [compiler-rt](https://compiler-rt.llvm.org) as the runtime library
      - [LLVM](https://llvm.org) as the target backend and binutils replacement
+     - [libc++](http://libcxx.llvm.org) and
+       [libc++abi](http://libcxxabi.llvm.org) as the C++ Standard Library
  * [Newlib](http://www.sourceware.org/newlib/) as the C library for embedded
    baremetal targets
  * [Python3](https://www.python.org/) as the main language for tools,
@@ -126,7 +128,7 @@ brew install cmake coreutils curl dash dos2unix doxygen gawk gettext git
 brew install m4 makedepend mspdebug ninja openssl pkg-config python
 brew install sqlite subversion wget xz
 brew install arm-none-eabi-llvm arm-none-eabi-gdb arm-none-eabi-binutils
-brew install armv6m-cortex-m0plus armv6m-cortex-m4 armv6m-cortex-m4f
+brew install armv6m-cortex-m0plus armv7em-cortex-m4 armv7em-cortex-m4f
 brew install --HEAD openocd-nrf52
 ````
 
