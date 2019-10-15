@@ -9,7 +9,11 @@ BUILD_SCRIPT="host/bin/build.sh"
 if [ -z "${DOCKERHUB_USER}" ]; then
     DOCKERHUB_USER="iroazh"
 fi
-hubprefix="${DOCKERHUB_USER}/"
+if [ "${DOCKERHUB_USER}" != "local" ]; then
+    hubprefix="${DOCKERHUB_USER}/"
+else
+    hubprefix=""
+fi
 
 . "$(dirname $0)/../docker/exec/docker.conf"
 

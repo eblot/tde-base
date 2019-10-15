@@ -20,7 +20,11 @@ EOT
 if [ -z "${DOCKERHUB_USER}" ]; then
     DOCKERHUB_USER="iroazh"
 fi
-hubprefix="${DOCKERHUB_USER}/"
+if [ "${DOCKERHUB_USER}" != "local" ]; then
+    hubprefix="${DOCKERHUB_USER}/"
+else
+    hubprefix=""
+fi
 
 NOCMD=0
 DEVENV=devenv
@@ -83,7 +87,7 @@ if [ ! $(docker images -q -f reference=${devenv}) ]; then
         echo "Downloading missing image ${devenv}" >&2
         docker pull ${devenv}
         if [ $? -ne 0 ]; then
-            if [ -z "${DOCKERHUB_USER}" ]; then
+            if [ -z "${hubprefix}" ]; then
                 echo "" >&2
                 echo " -> You may want to define DOCKERHUB_USER" >&2
             fi

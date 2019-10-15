@@ -61,7 +61,7 @@ docker rmi $(docker images --filter "dangling=true" -q)
 echo "Available Docker images"
 docker images
 
-if [ -n "${DOCKERHUB_USER}" ]; then
+if [ -n "${DOCKERHUB_USER}" -a "${DOCKERHUB_USER}" != "local" ]; then
     echo "Tagging Docker images"
     docker tag clang-aarch32:v9-10 ${DOCKERHUB_USER}/clang-aarch32:v9-10
     docker tag openocd-nrf52:v0.10.1-10 ${DOCKERHUB_USER}/openocd-nrf52:v0.10.1-10

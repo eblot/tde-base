@@ -105,11 +105,13 @@ that matches your host environment.
 
 #### Rebuild Docker containers from source
 
-Ensure the Docker engine is started, and runs with at least 2GB per core:
+1. Ensure the Docker engine is started, and runs with at least 2GB per core:
 either increase the memory available to docker, or decreases the count of
 available core, as some LLVM source files require a lot of memory to be built.
 
-Execute `host/bin/dockgen.sh` and grab a cup of coffee.
+2. Define `DOCKERHUB_USER` as local: `export DOCKERHUB_USER=local`
+
+3. Execute `host/bin/dockgen.sh` and grab a cup of coffee.
 
 ### macOS native toolchain installation
 

@@ -3,7 +3,11 @@
 if [ -z "${DOCKERHUB_USER}" ]; then
     DOCKERHUB_USER="iroazh"
 fi
-hubprefix="${DOCKERHUB_USER}/"
+if [ "${DOCKERHUB_USER}" != "local" ]; then
+    hubprefix="${DOCKERHUB_USER}/"
+else
+    hubprefix=""
+fi
 
 . "$(dirname $0)/../docker/exec/docker.conf"
 
@@ -18,7 +22,7 @@ for cnr in ${CONTAINERS}; do
         docker create -v ${path} --name ${volume} ${name} \
             /bin/true > /dev/null
         if [ $? -ne 0 ]; then
-            if [ -z "${DOCKERHUB_USER}" ]; then
+            if [ -z "${hubprefix}" ]; then
                 echo "" >&2
                 echo " -> You may want to define DOCKERHUB_USER" >&2
             fi
