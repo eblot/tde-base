@@ -58,9 +58,6 @@ fi
 echo "Removing any temporary image(s)"
 docker images --filter "dangling=true" -q | xargs docker rmi 2>  /dev/null
 
-echo "Available Docker images"
-docker images
-
 if [ -n "${DOCKERHUB_USER}" -a "${DOCKERHUB_USER}" != "local" ]; then
     echo "Tagging Docker images"
     docker tag clang-aarch32:v9-10 ${DOCKERHUB_USER}/clang-aarch32:v9-10
@@ -72,4 +69,11 @@ if [ -n "${DOCKERHUB_USER}" -a "${DOCKERHUB_USER}" != "local" ]; then
     docker tag openocd-nrf52:v0.10.1-10 ${DOCKERHUB_USER}/openocd-nrf52:v0.10.1-10
     docker tag lightdevenv:v9-10 ${DOCKERHUB_USER}/lightdevenv:v9-10
     docker tag devenv:v9-10 ${DOCKERHUB_USER}/devenv:v9-10
+
+    echo "Available Docker images"
+    docker images --filter=reference="${DOCKERHUB_USER}/*"
+else
+    echo "Available Docker images"
+    docker images
 fi
+
