@@ -1,6 +1,7 @@
 [submodule "stm32l432"]
 	path = stm32l432
-	url = git@github.com:eblot/tde-stm32l432.git
+	url = ../tde-stm32l432.git
 [submodule "nrf52"]
 	path = nrf52
-	url = git@github.com:eblot/tde-nrf52.git
+	url = ../tde-nrf52.git
+
