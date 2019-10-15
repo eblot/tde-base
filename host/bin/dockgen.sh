@@ -37,8 +37,8 @@ if [ $(docker images -q openocd-nrf52:v0.10.1-10 | wc -l) -eq 0 ]; then
     docker build -f host/docker/src/openocd-nrf52.docker -t openocd-nrf52:v0.10.1-10 . || exit $?
 fi
 
-echo "Creating Docker light developement environment"
 if [ $(docker images -q lightdevenv:v9-10 | wc -l) -eq 0 ]; then
+    echo "Creating Docker light developement environment"
     docker build -f host/docker/exec/lightdevenv.docker -t lightdevenv:tmp . || exit $?
     docker run --name lightdevenv_tmp -it lightdevenv:tmp /bin/sh -c "exit" || exit $?
     docker export lightdevenv_tmp | docker import - lightdevenv:v9-10 || exit $?
@@ -46,8 +46,8 @@ if [ $(docker images -q lightdevenv:v9-10 | wc -l) -eq 0 ]; then
     docker rmi lightdevenv:tmp || exit $?
 fi
 
-echo "Creating Docker fulll developement environment"
 if [ $(docker images -q devenv:v9-10 | wc -l) -eq 0 ]; then
+    echo "Creating Docker fulll developement environment"
     docker build -f host/docker/exec/devenv.docker -t devenv:tmp . || exit $?
     docker run -it --name devenv_tmp devenv:tmp /bin/sh -c "exit" || exit $?
     docker export devenv_tmp | docker import - devenv:v9-10 || exit $?
@@ -55,8 +55,8 @@ if [ $(docker images -q devenv:v9-10 | wc -l) -eq 0 ]; then
     docker rmi devenv:tmp || exit $?
 fi
 
-echo "Removing temporary images"
-docker rmi $(docker images --filter "dangling=true" -q)
+echo "Removing any temporary image(s)"
+docker images --filter "dangling=true" -q | xargs docker rmi
 
 echo "Available Docker images"
 docker images
