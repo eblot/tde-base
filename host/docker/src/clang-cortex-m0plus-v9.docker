@@ -1,7 +1,7 @@
 FROM clang:v9 as clang
 FROM newlib:v3.1.0 as newlib
 
-FROM clang-aarch32:v9-10 as builder
+FROM llvm-aarch32:v9-10 as builder
 RUN apk update
 RUN apk add build-base ninja cmake git patch vim python3 curl
 COPY --from=clang /toolchain/llvm /toolchain/llvm
