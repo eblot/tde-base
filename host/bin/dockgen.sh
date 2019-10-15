@@ -55,6 +55,9 @@ if [ $(docker images -q devenv:v9-10 | wc -l) -eq 0 ]; then
     docker rmi devenv:tmp || exit $?
 fi
 
+echo "Removing temporary images"
+docker images --filter "dangling=true" -q | xargs docker rmi
+
 if [ -n "${DOCKERHUB_USER}" ]; then
     echo "Tagging Docker images"
     docker tag clang-aarch32:v9-10 ${DOCKERHUB_USER}/clang-aarch32:v9-10
