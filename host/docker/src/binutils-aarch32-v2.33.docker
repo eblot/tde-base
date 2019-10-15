@@ -10,7 +10,7 @@ RUN curl -LO http://ftp.gnu.org/gnu/binutils/binutils-2.33.1.tar.xz && \
       tar xvf binutils-2.33.1.tar.xz
 RUN mkdir /toolchain/build
 WORKDIR /toolchain/build
-# light build: Assembler and Linker are not built, as provided wtith LLVM/Clang
+# light build: Assembler and Linker are not built, as provided with LLVM/Clang
 RUN ../binutils-2.33.1/configure \
     --prefix=/usr/local/arm-none-eabi \
     --target=arm-none-eabi \

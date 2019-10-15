@@ -31,5 +31,4 @@ COPY --from=builder /usr/local/nrf52 /usr/local/nrf52
 ENV PATH=$PATH:/usr/local/nrf52/bin
 WORKDIR /
 
-# (from host/docker/src)
-# docker build -f openocd-nrf52.docker -t ${DOCKERHUB_USER}/openocd-nrf52:v0.10.1-10 .
+# docker build -f host/docker/src/openocd-nrf52.docker -t ${DOCKERHUB_USER}/openocd-nrf52:v0.10.1-10 .

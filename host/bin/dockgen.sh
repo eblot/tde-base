@@ -34,7 +34,7 @@ if [ $(docker images -q binutils-aarch32:v2.33-10 | wc -l) -eq 0 ]; then
 fi
 if [ $(docker images -q openocd-nrf52:v0.10.1-10 | wc -l) -eq 0 ]; then
     echo "Building OpenOCD"
-    docker build -f openocd-nrf52.docker -t openocd-nrf52:v0.10.1-10 . || exit $?
+    docker build -f host/docker/src/openocd-nrf52.docker -t openocd-nrf52:v0.10.1-10 . || exit $?
 fi
 
 echo "Creating Docker light developement environment"

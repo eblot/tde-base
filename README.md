@@ -103,6 +103,14 @@ There are two ways to use Tiny Development Environment:
 [Docker Engine Community Edition](https://hub.docker.com/search/?type=edition&offering=community)
 that matches your host environment.
 
+#### Rebuild Docker containers from source
+
+Ensure the Docker engine is started, and runs with at least 2GB per core:
+either increase the memory available to docker, or decreases the count of
+available core, as some LLVM source files require a lot of memory to be built.
+
+Execute `host/bin/dockgen.sh` and grab a cup of coffee.
+
 ### macOS native toolchain installation
 
 #### Install brew package manager
@@ -142,13 +150,6 @@ pip3 install six crcmod bpython sphinx pyusb pyserial gnureadline \
    sphinx_autodoc_typehints paramiko breathe
 exit
 ````
-
-### Linux native toolchain installation
-
-To be documented.
-
-Is is recommended to use the Docker-based build, or follow Dockerfile recipes
-from `host/docker/src` to install from source.
 
 ## Projects
 
