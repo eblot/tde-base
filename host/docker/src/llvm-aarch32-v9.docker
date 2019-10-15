@@ -1,0 +1,41 @@
+FROM clang:v9
+ENV CLANG9PATH=/usr/local/clang9
+LABEL description="Build a LLVM/Clang 9 toolchain for ARM Aarch32 targets"
+LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
+RUN apk update
+RUN apk add build-base ninja cmake file python3-dev libedit-dev swig
+WORKDIR /toolchain/llvm/build
+RUN cmake -G Ninja -Wno-dev \
+   -DCMAKE_INSTALL_PREFIX=${CLANG9PATH} \
+   -DCMAKE_BUILD_TYPE=Release \
+   -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld" \
+   -DLLVM_ENABLE_SPHINX=False \
+   -DLLVM_INCLUDE_TESTS=False \
+   -DLLVM_TARGET_ARCH=ARM \
+   -DLLVM_TARGETS_TO_BUILD=ARM \
+   -DLLVM_INSTALL_UTILS=ON \
+   -DLLVM_DEFAULT_TARGET_TRIPLE=arm-none-eabi \
+   -DCMAKE_CROSSCOMPILING=ON \
+   ../llvm
+RUN ninja
+RUN ninja install
+RUN mkdir -p ${CLANG9PATH}/share/man/man1 ${CLANG9PATH}/share/man/man7
+RUN cp ../lld/docs/ld.lld.1 ../lldb/docs/lldb.1 ../llvm/docs/llvm-objdump.1 ${CLANG9PATH}/share/man/man1/
+RUN cp ../llvm/docs/re_format.7 ${CLANG9PATH}/share/man/man7/
+ENV PATH=${PATH}:${CLANG9PATH}/bin
+RUN file ${CLANG9PATH}/bin/* | grep ELF | cut -d: -f1 | xargs strip
+WORKDIR /
+
+
+# there should be at least 2GB/RAM per core to build
+
+# because LLVM C++ library build process needs the LLVM native .a libraries,
+# we need a two-stage process:
+# * build a full clang-aarch32 image required to build the toolchain, then
+# * build a .a -stripped version of the clang-aarch32 image useful to build
+#   target application, saving image storage footprint
+# This dockerfile is dedicated to build the first, full and large one. This
+# on is therefore never pushed to the docker hub, as it only lasts for the
+# time required to build the toolchain itself
+
+# docker build -f host/docker/src/llvm-aarch32-v9.docker -t llvm-aarch32:v9-10 .

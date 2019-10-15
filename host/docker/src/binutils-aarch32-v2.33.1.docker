@@ -4,14 +4,14 @@ LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
 RUN apk update
 RUN apk add build-base file curl
 WORKDIR /toolchain
-RUN curl -LO http://ftp.gnu.org/gnu/binutils/binutils-2.32.tar.xz && \
-   [ "0ab6c55dd86a92ed561972ba15b9b70a8b9f75557f896446c82e8b36e473ee04" = \
-      "$(sha256sum binutils-2.32.tar.xz | cut -d' ' -f1)" ] && \
-      tar xvf binutils-2.32.tar.xz
+RUN curl -LO http://ftp.gnu.org/gnu/binutils/binutils-2.33.1.tar.xz && \
+   [ "ab66fc2d1c3ec0359b8e08843c9f33b63e8707efdff5e4cc5c200eae24722cbf" = \
+      "$(sha256sum binutils-2.33.1.tar.xz | cut -d' ' -f1)" ] && \
+      tar xvf binutils-2.33.1.tar.xz
 RUN mkdir /toolchain/build
 WORKDIR /toolchain/build
 # light build: Assembler and Linker are not built, as provided wtith LLVM/Clang
-RUN ../binutils-2.32/configure \
+RUN ../binutils-2.33.1/configure \
     --prefix=/usr/local/arm-none-eabi \
     --target=arm-none-eabi \
     --without-gnu-ld \
@@ -37,5 +37,5 @@ COPY --from=builder /usr/local/arm-none-eabi /usr/local/arm-none-eabi
 ENV PATH=$PATH:/usr/local/arm-none-eabi
 WORKDIR /
 
-# docker build -f host/docker/src/binutils-aarch32-v2.32.docker -t binutils-aarch32:v2.32-10 .
-# docker tag binutils-aarch32:v2.32-10 ${DOCKERHUB_USER}/binutils-aarch32:v2.32-10
+# docker build -f host/docker/src/binutils-aarch32-v2.33.docker -t binutils-aarch32:v2.33-10 .
+# docker tag binutils-aarch32:v2.33-10 ${DOCKERHUB_USER}/binutils-aarch32:v2.33-10

@@ -1,0 +1,33 @@
+FROM alpine:3.10
+LABEL description="Store Git repository for LLVM/Clang 9 toolchain"
+LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
+RUN apk update
+RUN apk add curl
+WORKDIR /toolchain
+RUN curl -LO https://github.com/llvm/llvm-project/archive/llvmorg-9.0.0.tar.gz
+RUN [ "7807fac25330e24e9955ca46cd855dd34bbc9cc4fdba8322366206654d1036f2" = \
+      "$(sha256sum llvmorg-9.0.0.tar.gz | cut -d' ' -f1)" ] && \
+    tar xf llvmorg-9.0.0.tar.gz && \
+    mv llvm-project-llvmorg-9.0.0 llvm && rm llvmorg-9.0.0.tar.gz
+# D65722: Expand regions for gaps due to explicit address
+# short .got sections may trigger an overlapping issue w/o it
+RUN curl -LO https://github.com/llvm/llvm-project/commit/179dc276ebc1e592fb831bb4716e1b70c7f13cd4.diff && \
+    [ "68fedca404e1208c9d740d0f729403f455fbf4e5994f2880404b5d11da826041" = \
+      "$(sha256sum 179dc276ebc1e592fb831bb4716e1b70c7f13cd4.diff | cut -d' ' -f1)" ] && \
+     (cd llvm && patch -p1 < ../179dc276ebc1e592fb831bb4716e1b70c7f13cd4.diff)
+# use work from Yves Delley
+RUN curl -LO https://raw.githubusercontent.com/burnpanck/docker-llvm-armeabi/10b0c46be7df2c543e21a8ac592eb9fd6c7cea69/patches/0001-support-FPv4-SP.patch && \
+    [ "170da3053537885af5a4f0ae83444a7dbc6c81e4c8b27d0c13bdfa7a18533642" = \
+      "$(sha256sum 0001-support-FPv4-SP.patch | cut -d' ' -f1)" ] && \
+     (cd llvm && patch -p1 < ../0001-support-FPv4-SP.patch)
+RUN curl -LO https://raw.githubusercontent.com/burnpanck/docker-llvm-armeabi/10b0c46be7df2c543e21a8ac592eb9fd6c7cea69/patches/0001-enable-atomic-header-on-thread-less-builds.patch && \
+    [ "02db625a01dff58cfd4d6f7a73355e4148c39c920902c497d49c0e3e55cfb191" = \
+      "$(sha256sum 0001-enable-atomic-header-on-thread-less-builds.patch | cut -d' ' -f1)" ] && \
+     (cd llvm && patch -p1 < ../0001-enable-atomic-header-on-thread-less-builds.patch)
+RUN curl -LO https://raw.githubusercontent.com/burnpanck/docker-llvm-armeabi/10b0c46be7df2c543e21a8ac592eb9fd6c7cea69/patches/0001-explicitly-specify-location-of-libunwind-in-static-b.patch && \
+    [ "cb46ee6e3551c37a61d6563b8e52b7f5b5a493e559700a147ee29b970c659c11" = \
+      "$(sha256sum 0001-explicitly-specify-location-of-libunwind-in-static-b.patch | cut -d' ' -f1)" ] && \
+     (cd llvm && patch -p1 < ../0001-explicitly-specify-location-of-libunwind-in-static-b.patch)
+WORKDIR /
+
+# docker build -f host/docker/src/clang-v9.docker -t clang:v9 .
