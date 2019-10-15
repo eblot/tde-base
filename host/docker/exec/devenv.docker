@@ -20,7 +20,7 @@ RUN pip3 install readline paramiko netifaces
 RUN pip3 install six crcmod ruamel.yaml protobuf tabulate
 RUN pip3 install sphinx sphinx_rtd_theme sphinx_autodoc_typehints breathe
 RUN pip3 install pyusb pyserial
-RUN pip3 install numpy matplotlib scipy
+RUN pip3 install numpy matplotlib
 RUN apk del build-base linux-headers python3-dev
 RUN apk del libffi-dev readline-dev bash ncurses-dev openssl-dev
 RUN apk add hidapi --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
