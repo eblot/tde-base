@@ -56,7 +56,10 @@ if [ $(docker images -q devenv:v9-10 | wc -l) -eq 0 ]; then
 fi
 
 echo "Removing temporary images"
-docker images --filter "dangling=true" -q | xargs docker rmi
+docker rmi $(docker images --filter "dangling=true" -q)
+
+echo "Available Docker images"
+docker images
 
 if [ -n "${DOCKERHUB_USER}" ]; then
     echo "Tagging Docker images"

@@ -11,9 +11,9 @@ LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
 
 RUN apk update
 RUN apk add ninja cmake git patch pv xz doxygen curl
-RUN apk add libusb libftdi1 libffi readline ncurses openssl
+RUN apk add libusb libftdi1 libffi readline ncurses openssl freetype
 RUN apk add build-base linux-headers
-RUN apk add libffi-dev readline-dev bash ncurses-dev openssl-dev
+RUN apk add libffi-dev readline-dev bash ncurses-dev openssl-dev freetype-dev
 RUN apk add python3 python3-dev
 RUN pip3 install -U pip
 RUN pip3 install readline paramiko netifaces
@@ -22,7 +22,7 @@ RUN pip3 install sphinx sphinx_rtd_theme sphinx_autodoc_typehints breathe
 RUN pip3 install pyusb pyserial
 RUN pip3 install numpy matplotlib
 RUN apk del build-base linux-headers python3-dev
-RUN apk del libffi-dev readline-dev bash ncurses-dev openssl-dev
+RUN apk del libffi-dev readline-dev bash ncurses-dev openssl-dev freetype-dev
 RUN apk add hidapi --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
 
 # docker build -f host/docker/exec/devenv.docker -t devenv:tmp .
