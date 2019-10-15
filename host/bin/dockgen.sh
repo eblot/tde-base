@@ -56,7 +56,7 @@ if [ $(docker images -q devenv:v9-10 | wc -l) -eq 0 ]; then
 fi
 
 echo "Removing any temporary image(s)"
-docker images --filter "dangling=true" -q | xargs docker rmi
+docker images --filter "dangling=true" -q | xargs docker rmi 2>  /dev/null
 
 echo "Available Docker images"
 docker images
