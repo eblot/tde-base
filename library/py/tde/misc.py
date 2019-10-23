@@ -571,6 +571,30 @@ def get_time_logger(name: Optional[str] = None):
     return logger
 
 
+def merge_dicts(dict_a: dict, dict_b: dict) -> dict:
+    """Recursively merge dictionaries.
+
+       from https://stackoverflow.com/questions/38987/\
+               how-do-i-merge-two-dictionaries-in-a-single-expression
+    """
+    dict_c = {}
+    try:
+        overlapping_keys = dict_a.keys() & dict_b.keys()
+    except AttributeError:
+        def clsn(obj): return obj.__class__.__name__
+        raise ValueError(f'Cannot merge {clsn(dict_a)} and {clsn(dict_b)}')
+    for key in overlapping_keys:
+        try:
+            dict_c[key] = merge_dicts(dict_a[key], dict_b[key])
+        except ValueError as exc:
+            raise ValueError(f'{exc}: {key}')
+    for key in dict_a.keys() - overlapping_keys:
+        dict_c[key] = deepcopy(dict_a[key])
+    for key in dict_b.keys() - overlapping_keys:
+        dict_c[key] = deepcopy(dict_b[key])
+    return dict_c
+
+
 # ----------------------------------------------------------------------------
 
 class classproperty(property):

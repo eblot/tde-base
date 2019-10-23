@@ -7,7 +7,7 @@ import sys
 
 class BareLogger:
 
-    log = getLogger('tde.')
+    log = getLogger('tde')
     log.addHandler(StreamHandler(sys.stderr))
     log.setLevel(level=WARNING)
 
