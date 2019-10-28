@@ -1,0 +1,23 @@
+FROM alpine:3.10
+LABEL description="Store Git repository for LLVM/Clang 10 toolchain"
+LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
+RUN apk update
+RUN apk add curl git
+WORKDIR /toolchain
+RUN git clone https://github.com/llvm/llvm-project.git llvm
+# use work from Yves Delley
+RUN curl -LO https://gist.githubusercontent.com/eblot/04bc09727158266e1fec3a1789d65415/raw/b26870e10cb118ed089c800602888ca0635dc2d9/0001-support-FPv4-SP.patch && \
+    [ "f8e4c427baa23427e4a05b29a9b243a78fa6d0c4c8ce494cc656b03c45b8fd8c" = \
+      "$(sha256sum 0001-support-FPv4-SP.patch | cut -d' ' -f1)" ] && \
+     (cd llvm && patch -p1 < ../0001-support-FPv4-SP.patch)
+RUN curl -LO https://gist.githubusercontent.com/eblot/64d73fbb14f865bb351d5dd161033210/raw/d4f415e8e501854877356494b32aba2be714ae2b/0002-explicitly-specify-location-of-libunwind-in-static-b.patch && \
+    [ "ba41f4ab443ddc9743aa3253a2a7a4b77ac8471bb705f19e40264019421eac1e" = \
+      "$(sha256sum 0002-explicitly-specify-location-of-libunwind-in-static-b.patch | cut -d' ' -f1)" ] && \
+     (cd llvm && patch -p1 < ../0002-explicitly-specify-location-of-libunwind-in-static-b.patch)
+RUN curl -LO https://gist.githubusercontent.com/eblot/44ddc4a45ffd4bf03795bb5fbeeb40fd/raw/9f697c0ce2d4394915b458fa6ba98b9a61c79792/0003-enable-atomic-header-on-thread-less-builds.patch && \
+    [ "7620dc16be9d8d3ca39cb47c54509ae3088438b132c3dd175c3c52f505c73842" = \
+      "$(sha256sum 0003-enable-atomic-header-on-thread-less-builds.patch | cut -d' ' -f1)" ] && \
+     (cd llvm && patch -p1 < ../0003-enable-atomic-header-on-thread-less-builds.patch)
+WORKDIR /
+
+# docker build -f host/docker/src/clang-v10-dev.docker -t clang:v10-dev .

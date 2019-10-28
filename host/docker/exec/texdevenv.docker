@@ -1,8 +1,8 @@
 FROM alpine:3.10
 
-ENV CLANG9PATH=/usr/local/clang9
+ENV CLANG10PATH=/usr/local/clang10
 ENV BINUTILSPATH=/usr/local/arm-none-eabi
-ENV PATH=$PATH:${CLANG9PATH}/bin:${BINUTILSPATH}/bin
+ENV PATH=$PATH:${CLANG10PATH}/bin:${BINUTILSPATH}/bin
 
 WORKDIR /
 

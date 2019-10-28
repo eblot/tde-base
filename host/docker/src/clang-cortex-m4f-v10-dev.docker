@@ -1,23 +1,23 @@
-FROM clang:v9 as clang
+FROM clang:v10-dev as clang
 FROM newlib:v3.1.0 as newlib
 
-FROM llvm-aarch32:v9-10 as builder
+FROM llvm-aarch32:v10-dev-10 as builder
 RUN apk update
 RUN apk add build-base ninja cmake git patch vim python3 curl
 COPY --from=clang /toolchain/llvm /toolchain/llvm
 COPY --from=newlib /toolchain/newlib /toolchain/newlib
 WORKDIR /toolchain
 
-ENV CLANG9PATH=/usr/local/clang9
+ENV CLANG10PATH=/usr/local/clang10
 ENV xtarget=armv7em-none-eabi
 ENV xcpu=cortex-m4
-ENV xcpudir=cortex-m4
-ENV xfpu="-mfloat-abi=soft"
-ENV PATH=$PATH:${CLANG9PATH}/bin
-LABEL description="Build Cortex-M4 libraries"
+ENV xcpudir=cortex-m4f
+ENV xfpu="-mfloat-abi=hard -mfpu=fpv4-sp-d16"
+ENV PATH=$PATH:${CLANG10PATH}/bin
+LABEL description="Build Cortex-M4F libraries"
 LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
 
-ENV prefix=${CLANG9PATH}
+ENV prefix=${CLANG10PATH}
 ENV xabi="-mthumb -mabi=aapcs -fshort-enums"
 ENV xopts="-g -Os"
 ENV xcfeatures="-ffunction-sections -fdata-sections -fno-stack-protector -fvisibility=hidden"
@@ -31,13 +31,13 @@ ENV xcxx_lib="-L${xsysroot}/lib"
 ENV xcflags="${xctarget} ${xfpu} ${xopts} ${xcfeatures}"
 ENV xcxxflags="${xctarget} ${xfpu} ${xopts} ${xcxxfeatures} ${xcxxdefs} ${xcxx_inc}"
 
-ENV CC_FOR_TARGET=${CLANG9PATH}/bin/clang
-ENV AR_FOR_TARGET=${CLANG9PATH}/bin/llvm-ar
-ENV NM_FOR_TARGET=${CLANG9PATH}/bin/llvm-nm
-ENV RANLIB_FOR_TARGET=${CLANG9PATH}/bin/llvm-ranlib
-ENV READELF_FOR_TARGET=${CLANG9PATH}/bin/llvm-readelf
+ENV CC_FOR_TARGET=${CLANG10PATH}/bin/clang
+ENV AR_FOR_TARGET=${CLANG10PATH}/bin/llvm-ar
+ENV NM_FOR_TARGET=${CLANG10PATH}/bin/llvm-nm
+ENV RANLIB_FOR_TARGET=${CLANG10PATH}/bin/llvm-ranlib
+ENV READELF_FOR_TARGET=${CLANG10PATH}/bin/llvm-readelf
 ENV CFLAGS_FOR_TARGET="-target ${xtarget} ${xcflags} -Wno-unused-command-line-argument"
-ENV AS_FOR_TARGET="${CLANG9PATH}/bin/clang"
+ENV AS_FOR_TARGET="${CLANG10PATH}/bin/clang"
 WORKDIR /toolchain/build/newlib
 RUN echo "--- newlib ---" >&2
 RUN /toolchain/newlib/configure \
@@ -79,11 +79,11 @@ RUN cmake -G Ninja -Wno-dev \
     -DCMAKE_CROSSCOMPILING=ON \
     -DCMAKE_CXX_COMPILER_FORCED=TRUE \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_C_COMPILER=${CLANG9PATH}/bin/clang \
-    -DCMAKE_CXX_COMPILER=${CLANG9PATH}/bin/clang++ \
-    -DCMAKE_LINKER=${CLANG9PATH}/bin/clang \
-    -DCMAKE_AR=${CLANG9PATH}/bin/llvm-ar \
-    -DCMAKE_RANLIB=${CLANG9PATH}/bin/llvm-ranlib \
+    -DCMAKE_C_COMPILER=${CLANG10PATH}/bin/clang \
+    -DCMAKE_CXX_COMPILER=${CLANG10PATH}/bin/clang++ \
+    -DCMAKE_LINKER=${CLANG10PATH}/bin/clang \
+    -DCMAKE_AR=${CLANG10PATH}/bin/llvm-ar \
+    -DCMAKE_RANLIB=${CLANG10PATH}/bin/llvm-ranlib \
     -DCMAKE_C_COMPILER_TARGET=${xtarget} \
     -DCMAKE_ASM_COMPILER_TARGET=${xtarget} \
     -DCMAKE_SYSROOT=${xsysroot} \
@@ -92,7 +92,7 @@ RUN cmake -G Ninja -Wno-dev \
     -DCMAKE_ASM_FLAGS="${xcflags}" \
     -DCMAKE_CXX_FLAGS="${xcflags}" \
     -DCMAKE_EXE_LINKER_FLAGS=-L${xsysroot}/lib \
-    -DLLVM_CONFIG_PATH=${CLANG9PATH}/bin/llvm-config \
+    -DLLVM_CONFIG_PATH=${CLANG10PATH}/bin/llvm-config \
     -DLLVM_DEFAULT_TARGET_TRIPLE=${xtarget} \
     -DLLVM_TARGETS_TO_BUILD=ARM \
     -DLLVM_ENABLE_PIC=OFF \
@@ -125,11 +125,11 @@ RUN cmake -G Ninja -Wno-dev \
     -DCMAKE_CROSSCOMPILING=ON \
     -DCMAKE_CXX_COMPILER_FORCED=TRUE \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_C_COMPILER=${CLANG9PATH}/bin/clang \
-    -DCMAKE_CXX_COMPILER=${CLANG9PATH}/bin/clang++ \
-    -DCMAKE_LINKER=${CLANG9PATH}/bin/clang \
-    -DCMAKE_AR=${CLANG9PATH}/bin/llvm-ar \
-    -DCMAKE_RANLIB=${CLANG9PATH}/bin/llvm-ranlib \
+    -DCMAKE_C_COMPILER=${CLANG10PATH}/bin/clang \
+    -DCMAKE_CXX_COMPILER=${CLANG10PATH}/bin/clang++ \
+    -DCMAKE_LINKER=${CLANG10PATH}/bin/clang \
+    -DCMAKE_AR=${CLANG10PATH}/bin/llvm-ar \
+    -DCMAKE_RANLIB=${CLANG10PATH}/bin/llvm-ranlib \
     -DCMAKE_C_COMPILER_TARGET=${xtarget} \
     -DCMAKE_CXX_COMPILER_TARGET=${xtarget} \
     -DCMAKE_SYSROOT=${xsysroot} \
@@ -137,7 +137,7 @@ RUN cmake -G Ninja -Wno-dev \
     -DCMAKE_C_FLAGS="${xcxxflags}" \
     -DCMAKE_CXX_FLAGS="${xcxxflags}" \
     -DCMAKE_EXE_LINKER_FLAGS=-L${xcxx_lib} \
-    -DLLVM_CONFIG_PATH=${CLANG9PATH}/bin/llvm-config \
+    -DLLVM_CONFIG_PATH=${CLANG10PATH}/bin/llvm-config \
     -DLLVM_TARGETS_TO_BUILD=ARM \
     -DLLVM_ENABLE_PIC=OFF \
     -DLIBCXX_ENABLE_ASSERTIONS=OFF \
@@ -171,11 +171,11 @@ RUN cmake -G Ninja -Wno-dev \
     -DCMAKE_CROSSCOMPILING=ON \
     -DCMAKE_CXX_COMPILER_FORCED=TRUE \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_C_COMPILER=${CLANG9PATH}/bin/clang \
-    -DCMAKE_CXX_COMPILER=${CLANG9PATH}/bin/clang++ \
-    -DCMAKE_LINKER=${CLANG9PATH}/bin/clang \
-    -DCMAKE_AR=${CLANG9PATH}/bin/llvm-ar \
-    -DCMAKE_RANLIB=${CLANG9PATH}/bin/llvm-ranlib \
+    -DCMAKE_C_COMPILER=${CLANG10PATH}/bin/clang \
+    -DCMAKE_CXX_COMPILER=${CLANG10PATH}/bin/clang++ \
+    -DCMAKE_LINKER=${CLANG10PATH}/bin/clang \
+    -DCMAKE_AR=${CLANG10PATH}/bin/llvm-ar \
+    -DCMAKE_RANLIB=${CLANG10PATH}/bin/llvm-ranlib \
     -DCMAKE_C_COMPILER_TARGET=${xtarget} \
     -DCMAKE_CXX_COMPILER_TARGET=${xtarget} \
     -DCMAKE_SYSROOT=${xsysroot} \
@@ -183,7 +183,7 @@ RUN cmake -G Ninja -Wno-dev \
     -DCMAKE_C_FLAGS="${xcxxflags} ${xcxxnothread}" \
     -DCMAKE_CXX_FLAGS="${xcxxflags} ${xcxxnothread}" \
     -DCMAKE_EXE_LINKER_FLAGS=-L${xcxx_lib} \
-    -DLLVM_CONFIG_PATH=${CLANG9PATH}/bin/llvm-config \
+    -DLLVM_CONFIG_PATH=${CLANG10PATH}/bin/llvm-config \
     -DLLVM_ENABLE_PIC=OFF \
     -DLIBUNWIND_ENABLE_ASSERTIONS=OFF \
     -DLIBUNWIND_ENABLE_PEDANTIC=ON \
@@ -207,11 +207,11 @@ RUN cmake -G Ninja -Wno-dev \
     -DCMAKE_CROSSCOMPILING=ON \
     -DCMAKE_CXX_COMPILER_FORCED=TRUE \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_C_COMPILER=${CLANG9PATH}/bin/clang \
-    -DCMAKE_CXX_COMPILER=${CLANG9PATH}/bin/clang++ \
-    -DCMAKE_LINKER=${CLANG9PATH}/bin/clang \
-    -DCMAKE_AR=${CLANG9PATH}/bin/llvm-ar \
-    -DCMAKE_RANLIB=${CLANG9PATH}/bin/llvm-ranlib \
+    -DCMAKE_C_COMPILER=${CLANG10PATH}/bin/clang \
+    -DCMAKE_CXX_COMPILER=${CLANG10PATH}/bin/clang++ \
+    -DCMAKE_LINKER=${CLANG10PATH}/bin/clang \
+    -DCMAKE_AR=${CLANG10PATH}/bin/llvm-ar \
+    -DCMAKE_RANLIB=${CLANG10PATH}/bin/llvm-ranlib \
     -DCMAKE_C_COMPILER_TARGET=${xtarget} \
     -DCMAKE_CXX_COMPILER_TARGET=${xtarget} \
     -DCMAKE_SYSROOT=${xsysroot} \
@@ -219,7 +219,7 @@ RUN cmake -G Ninja -Wno-dev \
     -DCMAKE_C_FLAGS="${xcxxflags}" \
     -DCMAKE_CXX_FLAGS="${xcxxflags}" \
     -DCMAKE_EXE_LINKER_FLAGS=-L${xcxx_lib} \
-    -DLLVM_CONFIG_PATH=${CLANG9PATH}/bin/llvm-config \
+    -DLLVM_CONFIG_PATH=${CLANG10PATH}/bin/llvm-config \
     -DLLVM_ENABLE_PIC=OFF \
     -DLIBCXXABI_ENABLE_ASSERTIONS=OFF \
     -DLIBCXXABI_ENABLE_STATIC_UNWINDER=ON \
@@ -244,12 +244,12 @@ WORKDIR /
 FROM alpine:3.10
 LABEL description="Cortex-M4F environment"
 LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
-ENV CLANG9PATH=/usr/local/clang9
+ENV CLANG10PATH=/usr/local/clang10
 ENV xtarget=armv7em-none-eabi
-ENV xcpudir=cortex-m4
-COPY --from=builder ${CLANG9PATH}/${xtarget}/${xcpudir} \
-     ${CLANG9PATH}/${xtarget}/${xcpudir}
+ENV xcpudir=cortex-m4f
+COPY --from=builder ${CLANG10PATH}/${xtarget}/${xcpudir} \
+     ${CLANG10PATH}/${xtarget}/${xcpudir}
 WORKDIR /
 
-# docker build -f host/docker/src/clang-cortex-m4-v9.docker -t clang-cortex-m4:v9-10 .
-# docker tag clang-cortex-m4:v9-10 ${DOCKERHUB_USER}/clang-cortex-m4:v9-10
+# docker build -f host/docker/src/clang-cortex-m4f-v10-dev.docker -t clang-cortex-m4f:v10-dev-10 .
+# docker tag clang-cortex-m4f:v10-dev-10 ${DOCKERHUB_USER}/clang-cortex-m4f:v10-dev-10

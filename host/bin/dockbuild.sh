@@ -121,7 +121,7 @@ if [ ! $(docker images -q -f reference=${devenv}) ]; then
 fi
 
 IMGPATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
-IMGPATH=${IMGPATH}:/usr/local/clang9/bin:/usr/local/arm-none-eabi/bin
+IMGPATH=${IMGPATH}:/usr/local/clang10/bin:/usr/local/arm-none-eabi/bin
 
 FILTER=''
 for product in ${PRODUCTS}; do

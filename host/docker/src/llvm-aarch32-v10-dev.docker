@@ -1,12 +1,12 @@
-FROM clang:v9
-ENV CLANG9PATH=/usr/local/clang9
-LABEL description="Build a LLVM/Clang 9 toolchain for ARM Aarch32 targets"
+FROM clang:v10-dev
+ENV CLANG10PATH=/usr/local/clang10
+LABEL description="Build a LLVM/Clang 10 toolchain for ARM Aarch32 targets"
 LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
 RUN apk update
 RUN apk add build-base ninja cmake file python3-dev libedit-dev swig
 WORKDIR /toolchain/llvm/build
 RUN cmake -G Ninja -Wno-dev \
-   -DCMAKE_INSTALL_PREFIX=${CLANG9PATH} \
+   -DCMAKE_INSTALL_PREFIX=${CLANG10PATH} \
    -DCMAKE_BUILD_TYPE=Release \
    -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld" \
    -DLLVM_ENABLE_SPHINX=False \
@@ -19,11 +19,11 @@ RUN cmake -G Ninja -Wno-dev \
    ../llvm
 RUN ninja
 RUN ninja install
-RUN mkdir -p ${CLANG9PATH}/share/man/man1 ${CLANG9PATH}/share/man/man7
-RUN cp ../lld/docs/ld.lld.1 ../lldb/docs/lldb.1 ../llvm/docs/llvm-objdump.1 ${CLANG9PATH}/share/man/man1/
-RUN cp ../llvm/docs/re_format.7 ${CLANG9PATH}/share/man/man7/
-ENV PATH=${PATH}:${CLANG9PATH}/bin
-RUN file ${CLANG9PATH}/bin/* | grep ELF | cut -d: -f1 | xargs strip
+RUN mkdir -p ${CLANG10PATH}/share/man/man1 ${CLANG10PATH}/share/man/man7
+RUN cp ../lld/docs/ld.lld.1 ../lldb/docs/lldb.1 ../llvm/docs/llvm-objdump.1 ${CLANG10PATH}/share/man/man1/
+RUN cp ../llvm/docs/re_format.7 ${CLANG10PATH}/share/man/man7/
+ENV PATH=${PATH}:${CLANG10PATH}/bin
+RUN file ${CLANG10PATH}/bin/* | grep ELF | cut -d: -f1 | xargs strip
 WORKDIR /
 
 
@@ -38,4 +38,4 @@ WORKDIR /
 # on is therefore never pushed to the docker hub, as it only lasts for the
 # time required to build the toolchain itself
 
-# docker build -f host/docker/src/llvm-aarch32-v9.docker -t llvm-aarch32:v9-10 .
+# docker build -f host/docker/src/llvm-aarch32-v10.docker -t llvm-aarch32:v10-dev-10 .

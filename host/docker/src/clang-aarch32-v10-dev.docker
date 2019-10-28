@@ -1,0 +1,26 @@
+FROM llvm-aarch32:v10-dev-10 as source
+
+FROM alpine:3.10
+LABEL description="Aarch32 toolchain"
+LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
+ENV CLANG10PATH=/usr/local/clang10
+WORKDIR ${CLANG10PATH}
+
+COPY --from=source ${CLANG10PATH}/bin ${CLANG10PATH}/bin
+COPY --from=source ${CLANG10PATH}/lib/*.so ${CLANG10PATH}/lib/
+COPY --from=source ${CLANG10PATH}/lib/clang ${CLANG10PATH}/lib/clang
+COPY --from=source ${CLANG10PATH}/lib/cmake ${CLANG10PATH}/lib/cmake
+COPY --from=source ${CLANG10PATH}/libexec ${CLANG10PATH}/libexec
+COPY --from=source ${CLANG10PATH}/share ${CLANG10PATH}/share
+COPY --from=source ${CLANG10PATH}/include ${CLANG10PATH}/include
+WORKDIR /
+
+# because LLVM C++ library build process needs the LLVM native .a libraries,
+# we need a two-stage process:
+# * build a full clang-aarch32 image required to build the toolchain, then
+# * build a .a -stripped version of the clang-aarch32 image useful to build
+#   target application, saving image storage footprint
+# This dockerfile is dedicated to build the second, enlightened one.
+
+# docker build -f host/docker/src/clang-aarch32-v10-dev.docker -t clang-aarch32:v10-dev-10 .
+# docker tag clang-aarch32:v10-dev-10 ${DOCKERHUB_USER}/clang-aarch32:v10-dev-10
