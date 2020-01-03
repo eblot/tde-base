@@ -122,6 +122,7 @@ fi
 
 IMGPATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 IMGPATH=${IMGPATH}:/usr/local/clang9/bin:/usr/local/arm-none-eabi/bin
+IMGPATH=${IMGPATH}:/usr/local/msp430/bin:/usr/local/msp430-elf/bin
 
 FILTER=''
 for product in ${PRODUCTS}; do

@@ -19,8 +19,8 @@ SYS_SPHINX_VER="2.0.0"
 
 # detects build tools
 TOPDIR="$PWD"
-TOOLCHAINS="gcc|clang"
-TARGETS="host|cortex-m0plus|cortex-m4|cortex-m4f"
+TOOLCHAINS="gcc|clang|ti"
+TARGETS="host|msp430x2|cortex-m0plus|cortex-m4|cortex-m4f"
 
 # Die with an error message
 die() {
@@ -696,6 +696,41 @@ check_cross_clang() {
     fi
 }
 
+check_cross_ti() {
+    xtoolchain="$1"
+    check_all="$2"
+
+    # Verify TI C compiler
+    if [ -n "${USER_XTCTI_VER}" ]; then
+        if [ "${check_all}" -gt 0 ]; then
+            if [ -z "${VERBOSE}" ]; then
+                echo "Warning: Using a custom TI compiler:"\
+                     "${USER_XTCTI_VER}" >&2
+            fi
+        fi
+        if [ ${FORCEVER} -gt 0 ]; then
+            die "Version enforcement active, bailing out"
+        fi
+        SYS_XTCTI_VER="${USER_XTCTI_VER}"
+    fi
+    XTIC=`which cl430 2> /dev/null`
+    if [ -z "${XTIC}" ]; then
+        die "Missing or invalid TI compiler for ${xtoolchain}"
+    fi
+    XTICVER_STR=`${XTIC} -version | head -1 | cut -d'v' -f2 | \
+                 sed 's/.LTS$//'`
+    SYS_XTIC_MAJ=`echo ${SYS_XTCTI_VER} | cut -d. -f1`
+    SYS_XTIC_MIN=`echo ${SYS_XTCTI_VER} | cut -d. -f2`
+    SYS_XTICVER=`expr ${SYS_XTIC_MAJ} \* 100 + ${SYS_XTIC_MIN}`
+    XTICVER_MAJ=`echo ${XTICVER_STR} | cut -d. -f1`
+    XTICVER_MIN=`echo ${XTICVER_STR} | cut -d. -f2`
+    XTICVER=`expr ${XTICVER_MAJ} \* 100 + ${XTICVER_MIN}`
+    if [ ${XTICVER} -ne ${SYS_XTICVER} ]; then
+        die "TI toolchain mismatch: v${SYS_XTCTI_VER} required,"\
+             "v${XTICVER_STR} installed"
+    fi
+}
+
 check_cross_tools() {
     xtoolchain="$1"
     xtool="$2"
@@ -705,6 +740,8 @@ check_cross_tools() {
         check_cross_gcc ${xtoolchain} ${check_all}
     elif [ "${xtool}" = "clang" ]; then
         check_cross_clang ${xtoolchain} ${check_all}
+    elif [ "${xtool}" = "ti" ]; then
+        check_cross_ti ${xtoolchain} ${check_all}
     else
         die "Unsupported toolchain ${xtoolchain}-${xtool}"
     fi
@@ -716,7 +753,7 @@ get_toolchain() {
         host)
             XTOOLCHAIN=""
             ;;
-        msp430g2553)
+        msp430x2)
             XTOOLCHAIN="msp430-elf"
             ;;
         cortex-a8)
@@ -886,6 +923,7 @@ USER_CMAKE_VER="${USER_CMAKE_VER=}"
 USER_XTCCC_VER="${USER_XTCCC_VER=}"
 USER_XTCBU_VER="${USER_XTCBU_VER=}"
 USER_XTCCL_VER="${USER_XTCCL_VER=}"
+USER_XTCTI_VER="${USER_XTCTI_VER=}"
 USER_NINJA_VER="${USER_NINJA_VER=}"
 USER_DOXYGEN_VER="${USER_DOXYGEN_VER=}"
 USER_SPHINX_VER="${USER_SPHINX_VER=}"
@@ -958,9 +996,6 @@ for prjdesc in `echo ${PROJECTS} | tr ',' ' '`; do
                 XTOOL="clang"
                 XLD="gcc"
                 ;;
-            P)
-                XTOOL="provider"
-                ;;
             *)
                 ;;
         esac
@@ -994,7 +1029,6 @@ for prjdesc in `echo ${PROJECTS} | tr ',' ' '`; do
         fi
         CMAKEPRJOPT="${CMAKEOPT} -DTARGET=${TARGET}"
         CMAKEPRJOPT="${CMAKEPRJOPT} -DXTOOLCHAIN=${XTOOLCHAIN}"
-        CMAKEPRJOPT="${CMAKEPRJOPT} -DXCC_VER=${SYS_XTCCC_VER}"
         CMAKEPRJOPT="${CMAKEPRJOPT} -DXSYSROOT=${XSYSROOT}"
         if [ -n "${XLD}" ]; then
             CMAKEPRJOPT="${CMAKEPRJOPT} -DXLD=${XLD}"

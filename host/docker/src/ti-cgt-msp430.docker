@@ -1,0 +1,13 @@
+FROM alpine:3.10
+LABEL description="TI MSP430 compiler"
+LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
+ENV MSP430PATH=/usr/local/msp430
+RUN apk update
+RUN mkdir ${MSP430PATH}
+# beware that for now, the source package are extracted from official TI
+# source but not stored as is (TI distribution is a gigantic mess)
+ADD ti-msp430-cgt-v18.12.2.tar ${MSP430PATH}
+ADD ti-msp430-headers-v6.tar ${MSP430PATH}
+ENV PATH=${PATH}:${MSP430PATH}/bin
+
+# docker build -f host/docker/src/ti-cgt-msp430.docker -t msp430:v18.12.2-10 .

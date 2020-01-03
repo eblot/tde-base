@@ -1,8 +1,10 @@
 FROM alpine:3.10
 
 ENV CLANG9PATH=/usr/local/clang9
-ENV BINUTILSPATH=/usr/local/arm-none-eabi
-ENV PATH=$PATH:${CLANG9PATH}/bin:${BINUTILSPATH}/bin
+ENV MSP430PATH=/usr/local/msp430
+ENV BUARMPATH=/usr/local/arm-none-eabi
+ENV BUMSPPATH=/usr/local/msp430-elf
+ENV PATH=$PATH:${CLANG9PATH}/bin:${BUARMPATH}/bin:${MSP430PATH}/bin:${BUMSPPATH}/bin
 
 WORKDIR /
 

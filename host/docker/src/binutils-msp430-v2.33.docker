@@ -1,0 +1,36 @@
+FROM alpine:3.10 as builder
+LABEL description="Build binutils for TI MSP430 targets"
+LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
+RUN apk update
+RUN apk add build-base file curl
+WORKDIR /toolchain
+RUN curl -LO http://ftp.gnu.org/gnu/binutils/binutils-2.33.1.tar.xz && \
+   [ "ab66fc2d1c3ec0359b8e08843c9f33b63e8707efdff5e4cc5c200eae24722cbf" = \
+      "$(sha256sum binutils-2.33.1.tar.xz | cut -d' ' -f1)" ] && \
+      tar xvf binutils-2.33.1.tar.xz
+RUN mkdir /toolchain/build
+WORKDIR /toolchain/build
+RUN ../binutils-2.33.1/configure \
+    --prefix=/usr/local/msp430-elf \
+    --target=msp430-elf \
+    --disable-shared \
+    --disable-nls \
+    --with-gmp \
+    --with-mpfr \
+    --disable-cloog-version-check \
+    --enable-lto \
+    --disable-werror \
+    --disable-debug
+RUN make
+RUN make install
+WORKDIR /
+
+FROM alpine:3.10
+LABEL description="MSP430 binutils"
+LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
+COPY --from=builder /usr/local/msp430-elf /usr/local/msp430-elf
+ENV PATH=$PATH:/usr/local/msp430-elf
+WORKDIR /
+
+# docker build -f host/docker/src/binutils-msp430-v2.33.docker -t binutils-msp430:v2.33-10 .
+# docker tag binutils-msp430:v2.33-10 ${DOCKERHUB_USER}/binutils-msp430:v2.33-10

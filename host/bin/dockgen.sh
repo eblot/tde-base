@@ -32,6 +32,10 @@ if [ $(docker images -q binutils-aarch32:v2.33-10 | wc -l) -eq 0 ]; then
     echo "Building Binutils"
     docker build -f host/docker/src/binutils-aarch32-v2.33.docker -t binutils-aarch32:v2.33-10 . || exit $?
 fi
+if [ $(docker images -q binutils-msp430:v2.33-10 | wc -l) -eq 0 ]; then
+    echo "Building Binutils"
+    docker build -f host/docker/src/binutils-msp430-v2.33.docker -t binutils-msp430:v2.33-10 . || exit $?
+fi
 if [ $(docker images -q openocd-nrf52:v0.10.1-10 | wc -l) -eq 0 ]; then
     echo "Building OpenOCD"
     docker build -f host/docker/src/openocd-nrf52.docker -t openocd-nrf52:v0.10.1-10 . || exit $?
@@ -66,6 +70,7 @@ if [ -n "${DOCKERHUB_USER}" -a "${DOCKERHUB_USER}" != "local" ]; then
     docker tag clang-cortex-m4:v9-10 ${DOCKERHUB_USER}/clang-cortex-m4:v9-10
     docker tag clang-cortex-m0plus:v9-10 ${DOCKERHUB_USER}/clang-cortex-m0plus:v9-10
     docker tag binutils-aarch32:v2.33-10 ${DOCKERHUB_USER}/binutils-aarch32:v2.33-10
+    docker tag binutils-msp430:v2.33-10 ${DOCKERHUB_USER}/binutils-msp430:v2.33-10
     docker tag openocd-nrf52:v0.10.1-10 ${DOCKERHUB_USER}/openocd-nrf52:v0.10.1-10
     docker tag lightdevenv:v9-10 ${DOCKERHUB_USER}/lightdevenv:v9-10
     docker tag devenv:v9-10 ${DOCKERHUB_USER}/devenv:v9-10
