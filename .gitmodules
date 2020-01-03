@@ -4,4 +4,6 @@
 [submodule "nrf52"]
 	path = nrf52
 	url = ../tde-nrf52.git
-
+[submodule "msp430g2553"]
+	path = msp430g2553
+	url = ../tde-msp430g2553.git
