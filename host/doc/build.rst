@@ -732,19 +732,19 @@ Required dependencies
 ~~~~~~~~~~~~~~~~~~~~~
 
  * CMake (3.5+)
- * Ninja (1.6+)
- * Clang/LLVM (6.0+) for ARM targets
- * TI toolchain (16.9+) for MSP430 targets
+ * Ninja (1.8+)
+ * Clang/LLVM (9.0+) for ARM targets
+ * TI toolchain (18.2+) for MSP430 targets
  * Python 3.6 with additional packages (see SDK installation doc for details)
 
 Optional dependencies
 ~~~~~~~~~~~~~~~~~~~~~
 
- * Sphinx (1.5+)
- * Doxygen (1.8.11+)
+ * Sphinx (2.0+)
+ * Doxygen (1.8.15+)
  * GNU make (3.81+)
  * GNU C and C++ compiler (7.2+ series)
- * GNU Binutils assembler, linker and miscelleanous tools (2.27+ series)
+ * GNU Binutils assembler, linker and miscelleanous tools (2.33+ series)
 
 About Ninja
 ~~~~~~~~~~~
