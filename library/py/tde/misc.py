@@ -18,9 +18,12 @@ from socket import gethostbyname
 from tempfile import NamedTemporaryFile
 from threading import Lock
 from types import MethodType
-from typing import (Any, Iterable, Mapping, NewType, Optional, Sequence, Tuple,
-                    Type, Union)
+from typing import (Any, Dict, Iterable, Mapping, NewType, Optional, Sequence,
+                    Tuple, Type, Union)
 
+
+Q8_8 = NewType('Q8_8', int)
+"""Fixed-point 8+8 bit value"""
 
 TRUE_BOOLEANS = ['on', 'high', 'true', 'enable', 'enabled', 'yes', '1']
 """String values evaluated as true boolean values"""
@@ -174,6 +177,118 @@ def to_bool(value, permissive=True, prohibit_int=False):
     raise ValueError('"Invalid boolean value: "%s"' % value)
 
 
+def to_frequency(value):
+    """Parse a string and convert it into a frequency floating value.
+
+       The function accepts common multipliers as K(Hz), M(Hz) and G(Hz)
+
+       :param value: the value to parse and convert
+       :type value: str or int or float
+       :rtype: float
+       :raise ValueError: if the input value cannot be converted into a float
+    """
+    if isinstance(value, float):
+        return value
+    elif isinstance(value, int):
+        return float(value)
+    mo = match(r'^(?P<value>[-+]?[0-9]*\.?[0-9]+(?:[Ee][-+]?[0-9]+)?)'
+               r'(?:(?P<unit>[KkMmGg])(?:[Hh][Zz]|))?$', value)
+    if not mo:
+        raise ValueError('Invalid frequency')
+    frequency = float(mo.group(1))
+    if mo.group(2):
+        mult = {'K': 1E3, 'M': 1E6, 'G': 1E9}
+        frequency *= mult[mo.group(2).upper()]
+    return frequency
+
+
+def to_time(value):
+    """Parse a string and convert it into a time floating value.
+
+       The function accepts common multipliers as m(s), µ(s) and n(s)
+
+       :param value: the value to parse and convert
+       :type value: str or int or float
+       :rtype: float
+       :raise ValueError: if the input value cannot be converted into a float
+    """
+    if isinstance(value, float):
+        return value
+    elif isinstance(value, int):
+        return float(value)
+    mo = match(r'^(?i)(?P<value>[-+]?[0-9]*\.?[0-9]+(?:[E][-+]?[0-9]+)?)'
+               r'(?:(?P<unit>[mµn])(?:s|))?$', value)
+    if not mo:
+        raise ValueError('Invalid time')
+    time_ = float(mo.group(1))
+    if mo.group(2):
+        mult = {'m': 1E-3, 'µ': 1E-6, 'n': 1E-9}
+        time_ *= mult[mo.group(2)]
+    return time_
+
+
+def to_bps(value: str) -> int:
+    """Parse a string and convert it into a baudrate value.
+
+       The function accepts common multipliers as K, M and G
+
+       :param value: the value to parse and convert
+       :type value: str or int or float
+       :rtype: float
+       :raise ValueError: if the input value cannot be converted into a float
+    """
+    if isinstance(value, float):
+        return int(value)
+    if isinstance(value, int):
+        return value
+    mo = match(r'^(?P<value>[-+]?[0-9]*\.?[0-9]+(?:[Ee][-+]?[0-9]+)?)'
+               r'(?P<unit>[KkMmGg])?$', value)
+    if not mo:
+        raise ValueError('Invalid frequency')
+    frequency = float(mo.group(1))
+    if mo.group(2):
+        mult = {'K': 1E3, 'M': 1E6, 'G': 1E9}
+        frequency *= mult[mo.group(2).upper()]
+    return int(frequency)
+
+
+def int2boolstr(value, size=0, sep=' ', nsep='.', wall='', xv=False):
+    """Format a integral value into a string of boolean bits
+
+       :value:  the integer to format
+       :size:   an optional count of bytes to format
+       :sep:    an optional string added between each group of bytes
+       :wall:   an optional string to place before and after the output string
+       :xv:     set to true to suffix the string with the hex value
+    """
+    if not size:
+        bs = '{0:b}'.format(value)
+        hs = xv and ('%x' % value) or ''
+    elif size == '?':
+        bs = '{0:1b}'.format(value)
+        hs = xv and ('%x' % value) or ''
+    else:
+        nibbles = []
+        fmt = '%%0%dx' % (2*size)
+        hs = fmt % value
+        bfmt = '{:04b}%s{:04b}' % nsep
+        while size:
+            lo = value & 0xf
+            value >>= 4
+            hi = value & 0xf
+            value >>= 4
+            nibbles.append((hi, lo))
+            size -= 1
+        nibbles.reverse()
+        fmt = sep.join([bfmt.format(hi, lo) for hi, lo in nibbles])
+        bs = fmt.format(*nibbles)
+    if wall:
+        bs = ''.join((wall, bs, wall))
+    if hs:
+        return ' '.join((bs, hs))
+    return bs
+
+
 def xor(_a_, _b_):
     """XOR logical operation.
 
@@ -263,6 +378,16 @@ def pretty_period(value: Union[int, float],
     return ' '.join(['%s%s' % v for v in reversed(values)])
 
 
+def plural(value):
+    """Return 's' if the value is greater than 1
+
+       :param value: a integral value
+       :return: 's' or the empty string
+       :rtype: str
+    """
+    return 's' if (to_int(value) > 1) else ''
+
+
 def group(lst, count):
     """Group a list into consecutive count-tuples. Incomplete tuples are
     discarded.
@@ -279,6 +404,63 @@ def flatten(lst):
            making-a-flat-list-out-of-list-of-lists-in-python
     """
     return [item for sublist in lst for item in sublist]
+
+
+def flatten_dict(mapping: Mapping, sep: Optional[str] = '.') \
+        -> Dict[str, Any]:
+    """Flatten a dictionary.
+
+       A new dictionary whose values are the leaf values of the original
+       dictionary tree is returned.
+       Each key is made of the sep-separated names of the original dictionary
+       names.
+
+       :param mapping: the mapping to flatten down
+       :param sep: alternative separator
+       :return: the flattened dictionary
+    """
+    flatmap = dict()
+    for mkey, mval in mapping.items():
+        if isinstance(mval, dict):
+            for fkey, fval in flatten_dict(mval, sep).items():
+                flatmap[sep.join((mkey, fkey))] = fval
+        else:
+            flatmap[mkey] = mval
+    return flatmap
+
+
+def convert_real_to_fixpt88(value):
+    """Convert a real number into a 8.8 fixed point"""
+    return round(256*value)
+
+
+def convert_fixpt88_to_real(value):
+    """Convert a 8.8 fixed point value into a real number"""
+    return float(value)/256.0
+
+
+def bcd_digits(chars):
+    """Provide a generator on each digit of a BCD-encoded byte sequence"""
+    for char in chars:
+        for val in (char >> 4, char & 0xF):
+            yield val
+
+
+def bcd_to_int(chars):
+    """Convert a BCD-encoded byte sequence into an integral value"""
+    value = 0
+    for digit in bcd_digits(chars):
+        value *= 10
+        value += digit
+    return value
+
+
+def is_quoted(str_):
+    """Tells whether a string is enclosed in simple- or double- quoted
+       markers"""
+    str_ = str_.strip()
+    return (str_.startswith('"') and str_.endswith('"')) or \
+           (str_.startswith("'") and str_.endswith("'"))
 
 
 def file_generator(path, action, *args):
