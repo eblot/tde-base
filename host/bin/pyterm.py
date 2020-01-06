@@ -49,7 +49,6 @@ mswin = platform == 'win32'
 if not mswin:
     from termios import TCSANOW, tcgetattr, tcsetattr
 import local
-from pyftdi import FtdiLogger
 from tde.filterlog import get_term_formatter
 from tde.misc import get_time_logger, to_int
 from tde.term import getkey, is_term
@@ -522,8 +521,10 @@ def main():
         loglevel = min(ERROR, loglevel)
         localfmt = Formatter('%(levelname)s %(asctime)s.%(msecs)03d '
                             '%(message)s', '%H:%M:%S')
-        FtdiLogger.set_formatter(localfmt)
-        FtdiLogger.set_level(loglevel if args.verbose > 3 else ERROR)
+        if args.device.startswith('ftdi://'):
+            from pyftdi import FtdiLogger
+            FtdiLogger.set_formatter(localfmt)
+            FtdiLogger.set_level(loglevel if args.verbose > 3 else ERROR)
 
         if args.filterlog:
             fmtcls = get_term_formatter(not is_term())
