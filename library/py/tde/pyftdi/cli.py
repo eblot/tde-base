@@ -5,7 +5,7 @@ from logging import getLogger
 from importlib import import_module
 from re import compile as recompile
 from tde.cmdshell import CmdShellError, CmdShellProvider
-from tde.misc import classproperty, to_bool, to_int
+from tde.misc import classproperty, to_bool, to_int, to_frequency
 
 #pylint: disable-msg=inconsistent-return-statements
 #pylint: disable-msg=no-self-argument
@@ -45,6 +45,12 @@ class FtdiCommandProvider(CmdShellProvider):
                                    '.'.join(__name__.split('.')[1:-1]))
             ctrl_cls = getattr(module, '%sController' % mode.title())
             ctrl = ctrl_cls()
+            try:
+                if 'frequency' in kwargs:
+                    kwargs['frequency'] = to_frequency(kwargs['frequency'])
+            except ValueError:
+                raise CmdShellError('Invalid bus frequency: %s' %
+                                    kwargs['frequency'])
             ctrl.configure(url, **kwargs)
         except ImportError as ex:
             raise CmdShellError('Unsupported FTDI mode: %s' % ex)
